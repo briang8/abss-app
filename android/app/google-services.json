@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "239875605076",
+    "project_id": "abss-app",
+    "storage_bucket": "abss-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239875605076:android:22eb02a9d3e3de318023c1",
+        "android_client_info": {
+          "package_name": "com.abss.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUkOE_gMh5_ynfyxWhIOFexZ4Xm3_eQCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239875605076:android:0ad1d87a190012658023c1",
+        "android_client_info": {
+          "package_name": "com.example.abss_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUkOE_gMh5_ynfyxWhIOFexZ4Xm3_eQCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

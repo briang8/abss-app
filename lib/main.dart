@@ -1,122 +1,209 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'theme/app_theme.dart';
+import 'providers/app_providers.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/alerts_screen.dart';
+import 'screens/forecast_screen.dart';
+import 'screens/settings_screen.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp(const ProviderScope(child: ABSSApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ABSSApp extends ConsumerWidget {
+  const ABSSApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+
+    // Update system UI overlay to match current theme
+    final isDark = themeMode == ThemeMode.dark;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    ));
+
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'ABSS — Alerts by Stay Safe',
+      debugShowCheckedModeBanner: false,
+      // Default is LIGHT — outdoor readability first
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      home: const _AppRoot(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class _AppRoot extends ConsumerWidget {
+  const _AppRoot();
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final onboardingDone = ref.watch(onboardingProvider);
+    if (!onboardingDone) return const OnboardingScreen();
+    return const MainShell();
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+//  Main Shell 
+class MainShell extends ConsumerWidget {
+  const MainShell({super.key});
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(bottomNavIndexProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? AppColors.darkBg : AppColors.lightBg;
+    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.lightSurface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final textMuted = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+    final lastCheckIn = ref.watch(dailyCheckInProvider);
+    final regType = ref.watch(userRegistrationTypeProvider);
+    final needsCheckIn = regType == UserRegistrationType.offline &&
+        (lastCheckIn == null || DateTime.now().difference(lastCheckIn).inHours >= 24);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: Column(
+        children: [
+          if (needsCheckIn)
+            _CheckInBanner(onCheckIn: () async {
+              await ref.read(dailyCheckInProvider.notifier).checkIn();
+              ref.invalidate(forecastProvider);
+              ref.invalidate(alertsProvider);
+            }),
+          Expanded(
+            child: IndexedStack(
+              index: currentIndex,
+              children: const [
+                HomeScreen(),
+                AlertsScreen(),
+                ForecastScreen(),
+                SettingsScreen(),
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: surfaceColor,
+          border: Border(top: BorderSide(color: borderColor)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08), blurRadius: 16, offset: const Offset(0, -2))],
+        ),
+        child: SafeArea(
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: [
+                _NavItem(index: 0, current: currentIndex, icon: Icons.home_outlined,        activeIcon: Icons.home_rounded,          label: 'Home'),
+                _NavItem(index: 1, current: currentIndex, icon: Icons.warning_amber_outlined,activeIcon: Icons.warning_amber_rounded,  label: 'Alerts'),
+                _NavItem(index: 2, current: currentIndex, icon: Icons.cloud_outlined,        activeIcon: Icons.cloud_rounded,          label: 'Forecast'),
+                _NavItem(index: 3, current: currentIndex, icon: Icons.settings_outlined,     activeIcon: Icons.settings_rounded,       label: 'Settings'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
+}
+
+class _NavItem extends ConsumerWidget {
+  final int index;
+  final int current;
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const _NavItem({required this.index, required this.current, required this.icon, required this.activeIcon, required this.label});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final active = index == current;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = AppColors.primary;
+    final mutedColor = isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => ref.read(bottomNavIndexProvider.notifier).state = index,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Icon(active ? activeIcon : icon, key: ValueKey(active), size: 22, color: active ? activeColor : mutedColor),
+            ),
+            const SizedBox(height: 3),
+            Text(label, style: AppText.caption(null).copyWith(fontSize: 10, fontWeight: active ? FontWeight.w600 : FontWeight.w400, color: active ? activeColor : mutedColor)),
+            const SizedBox(height: 2),
+            AnimatedContainer(duration: const Duration(milliseconds: 200), width: active ? 16 : 0, height: 2,
+              decoration: BoxDecoration(color: activeColor, borderRadius: BorderRadius.circular(1))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CheckInBanner extends StatelessWidget {
+  final VoidCallback onCheckIn;
+  const _CheckInBanner({required this.onCheckIn});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A2340) : const Color(0xFFFFFBEB),
+        border: Border(bottom: BorderSide(color: isDark ? AppColors.darkBorder : const Color(0xFFFDE68A))),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
+      child: SafeArea(
+        bottom: false,
+        child: Row(
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            Icon(Icons.schedule_outlined, size: 16, color: AppColors.moderate),
+            const SizedBox(width: 10),
+            Expanded(child: Text('Connect daily to keep your alerts fresh.', style: AppText.caption(null).copyWith(color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary))),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onCheckIn,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+                ),
+                child: Text('Refresh', style: AppText.caption(null).copyWith(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
+
+

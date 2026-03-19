@@ -291,7 +291,7 @@ class _ShimmerBoxState extends State<ShimmerBox> with SingleTickerProviderStateM
     final c2 = isDark ? AppColors.darkCardAlt       : const Color(0xFFE8EEF4);
     return AnimatedBuilder(
       animation: _a,
-      builder: (_, __) => Container(
+      builder: (_, _) => Container(
         width: widget.width, height: widget.height,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.radius),

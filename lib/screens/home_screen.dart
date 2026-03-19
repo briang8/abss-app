@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
                 child: forecast.when(
                   data: (f) => _WeatherHero(forecast: f),
                   loading: () => _WeatherHeroSkeleton(),
-                  error: (_, __) => _OfflineWeatherHero(),
+                  error: (_, _) => _OfflineWeatherHero(),
                 ),
               ),
 
@@ -49,7 +49,7 @@ class HomeScreen extends ConsumerWidget {
                 child: activeAlerts.when(
                   data: (a) => a.isEmpty ? const SizedBox.shrink() : _ActiveAlertBanner(alert: a.first),
                   loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
               ),
 
@@ -60,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                 child: forecast.when(
                   data: (f) => _HourlyStrip(hourly: f.hourly),
                   loading: () => _HourlyStripSkeleton(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                 ),
               ),
 
@@ -97,7 +97,7 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$greeting${profile?.name != null && profile!.name.isNotEmpty ? ", ${profile!.name.split(' ').first}" : ""}', style: AppText.caption(context)?.copyWith(fontSize: 13)),
+                Text('$greeting${profile?.name != null && profile!.name.isNotEmpty ? ", ${profile!.name.split(' ').first}" : ""}', style: AppText.caption(context).copyWith(fontSize: 13)),
                 const SizedBox(height: 2),
                 Row(children: [
                   Icon(Icons.location_on_outlined, size: 14, color: AppColors.primary),
@@ -113,7 +113,7 @@ class _Header extends StatelessWidget {
             child: Row(children: [
               Icon(Icons.access_time_rounded, size: 12, color: AppColors.textMuted(context)),
               const SizedBox(width: 4),
-              Text(DateFormat('HH:mm').format(DateTime.now()), style: AppText.caption(context)?.copyWith(fontSize: 12)),
+              Text(DateFormat('HH:mm').format(DateTime.now()), style: AppText.caption(context).copyWith(fontSize: 12)),
             ]),
           ),
         ],
@@ -144,7 +144,7 @@ class _WeatherHero extends StatelessWidget {
                   children: [
                     Text('${forecast.currentTemp.round()}°', style: AppText.display(context)),
                     const SizedBox(height: 4),
-                    Text(_conditionLabel(forecast.currentCondition), style: AppText.body(context)?.copyWith(fontSize: 16)),
+                    Text(_conditionLabel(forecast.currentCondition), style: AppText.body(context).copyWith(fontSize: 16)),
                     Text('Feels like ${forecast.feelsLike.round()}°C', style: AppText.caption(context)),
                   ],
                 ),
@@ -194,8 +194,8 @@ class _StatPill extends StatelessWidget {
         child: Column(children: [
           Icon(icon, size: 16, color: AppColors.textSecondary(context)),
           const SizedBox(height: 4),
-          Text(value, style: AppText.h4(context)?.copyWith(fontSize: 14)),
-          Text(label, style: AppText.caption(context)?.copyWith(fontSize: 10)),
+          Text(value, style: AppText.h4(context).copyWith(fontSize: 14)),
+          Text(label, style: AppText.caption(context).copyWith(fontSize: 10)),
         ]),
       ),
     );
@@ -306,7 +306,7 @@ class _HourlyStrip extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
             itemCount: hourly.take(24).length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (_, i) {
               final h = hourly[i];
               final isNow = i == 0;
@@ -325,10 +325,10 @@ class _HourlyStrip extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(isNow ? 'Now' : DateFormat('HH:mm').format(h.time), style: AppText.caption(context)?.copyWith(fontSize: 11, color: isNow ? AppColors.info : AppColors.textMuted(context))),
+                    Text(isNow ? 'Now' : DateFormat('HH:mm').format(h.time), style: AppText.caption(context).copyWith(fontSize: 11, color: isNow ? AppColors.info : AppColors.textMuted(context))),
                     WeatherIcon(condition: h.condition, size: 22),
-                    Text('${h.tempC.round()}°', style: AppText.h4(context)?.copyWith(fontSize: 16)),
-                    Text('${h.rainProbability.round()}%', style: AppText.caption(context)?.copyWith(color: AppColors.info, fontSize: 11)),
+                    Text('${h.tempC.round()}°', style: AppText.h4(context).copyWith(fontSize: 16)),
+                    Text('${h.rainProbability.round()}%', style: AppText.caption(context).copyWith(color: AppColors.info, fontSize: 11)),
                   ],
                 ),
               );
@@ -353,8 +353,8 @@ class _HourlyStripSkeleton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           scrollDirection: Axis.horizontal,
           itemCount: 7,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemBuilder: (_, __) => const ShimmerBox(width: 72, height: 108, radius: 14),
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemBuilder: (_, _) => const ShimmerBox(width: 72, height: 108, radius: 14),
         ),
       ),
     ],
@@ -395,7 +395,7 @@ class _QuickActions extends ConsumerWidget {
                         child: Icon(a.icon, size: 18, color: a.color),
                       ),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(a.label, style: AppText.h4(context)?.copyWith(fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                      Expanded(child: Text(a.label, style: AppText.h4(context).copyWith(fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis)),
                     ]),
                   ),
                 ),

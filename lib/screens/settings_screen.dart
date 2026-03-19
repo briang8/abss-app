@@ -49,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
                             child: Center(
                               child: Text(
                                 profile?.name.isNotEmpty == true ? profile!.name[0].toUpperCase() : 'A',
-                                style: AppText.h3(context)?.copyWith(color: AppColors.primary, fontSize: 22),
+                                style: AppText.h3(context).copyWith(color: AppColors.primary, fontSize: 22),
                               ),
                             ),
                           ),
@@ -102,7 +102,7 @@ class SettingsScreen extends ConsumerWidget {
                       onChanged: (v) {
                         ref.read(themeProvider.notifier).setTheme(v ? ThemeMode.dark : ThemeMode.light);
                       },
-                      activeColor: AppColors.primary,
+                      activeThumbColor: AppColors.primary,
                       inactiveTrackColor: AppColors.border(context),
                     ),
                   ],
@@ -110,7 +110,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 6, left: 4),
-                child: Text('Light mode is recommended for outdoor use in bright conditions.', style: AppText.caption(context)?.copyWith(fontSize: 11)),
+                child: Text('Light mode is recommended for outdoor use in bright conditions.', style: AppText.caption(context).copyWith(fontSize: 11)),
               ),
 
               const SizedBox(height: 24),
@@ -179,8 +179,8 @@ class _DataRow extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 10),
     child: Row(children: [
-      Expanded(child: Text(label, style: AppText.bodyMedium(context)?.copyWith(fontSize: 14))),
-      Flexible(child: Text(value, style: AppText.caption(context)?.copyWith(fontSize: 12), textAlign: TextAlign.right)),
+      Expanded(child: Text(label, style: AppText.bodyMedium(context).copyWith(fontSize: 14))),
+      Flexible(child: Text(value, style: AppText.caption(context).copyWith(fontSize: 12), textAlign: TextAlign.right)),
     ]),
   );
 }
@@ -224,7 +224,7 @@ class _HelpCardState extends State<_HelpCard> {
             ]),
             if (_open) ...[
               const SizedBox(height: 10),
-              Text(widget.body, style: AppText.body(context)?.copyWith(fontSize: 13, height: 1.6)),
+              Text(widget.body, style: AppText.body(context).copyWith(fontSize: 13, height: 1.6)),
             ],
           ],
         ),

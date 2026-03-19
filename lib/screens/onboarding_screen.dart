@@ -193,17 +193,17 @@ class _WelcomeStep extends StatelessWidget {
           // Text-only logo — no circular icon
           Text('ABSS', style: GoogleFonts.dmSans(fontSize: 52, fontWeight: FontWeight.w900, letterSpacing: 3, color: AppColors.primary)),
           const SizedBox(height: 6),
-          Text('Alerts by Stay Safe', style: AppText.caption(context)?.copyWith(letterSpacing: 1.2, fontSize: 13)),
+          Text('Alerts by Stay Safe', style: AppText.caption(context).copyWith(letterSpacing: 1.2, fontSize: 13)),
           const SizedBox(height: 20),
           Text(
             'Know before the storm hits.\nStay safe wherever you are.',
-            style: AppText.h2(context)?.copyWith(height: 1.35, fontWeight: FontWeight.w700),
+            style: AppText.h2(context).copyWith(height: 1.35, fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           Text(
             'Real-time climate alerts and forecasts for East Africa — online or offline.',
-            style: AppText.body(context)?.copyWith(fontSize: 15),
+            style: AppText.body(context).copyWith(fontSize: 15),
             textAlign: TextAlign.center,
           ),
           const Spacer(),
@@ -228,7 +228,7 @@ class _FeatureRow extends StatelessWidget {
   Widget build(BuildContext context) => Row(children: [
     Container(width: 42, height: 42, decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)), child: Icon(icon, size: 20, color: color)),
     const SizedBox(width: 14),
-    Expanded(child: Text(text, style: AppText.bodyMedium(context)?.copyWith(fontSize: 14))),
+    Expanded(child: Text(text, style: AppText.bodyMedium(context).copyWith(fontSize: 14))),
   ]);
 }
 
@@ -253,14 +253,14 @@ class _LanguageStep extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: _languageEntries.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (_, i) {
               final (name, code) = _languageEntries[i];
               final sel = name == selected;
               return _Tile(selected: sel, onTap: () => onSelect(name, code), child: Row(children: [
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(name, style: AppText.bodyMedium(context)),
-                  Text(L10n.of(code).cont, style: AppText.caption(context)?.copyWith(fontSize: 11, color: sel ? AppColors.primary.withValues(alpha: 0.75) : AppColors.textMuted(context))),
+                  Text(L10n.of(code).cont, style: AppText.caption(context).copyWith(fontSize: 11, color: sel ? AppColors.primary.withValues(alpha: 0.75) : AppColors.textMuted(context))),
                 ]),
                 const Spacer(),
                 if (sel) const Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
@@ -352,7 +352,7 @@ class _LocationStepState extends ConsumerState<_LocationStep> {
           ),
           if (_detectError != null) ...[
             const SizedBox(height: 6),
-            Text(_detectError!, style: AppText.caption(context)?.copyWith(color: AppColors.critical, fontSize: 12)),
+            Text(_detectError!, style: AppText.caption(context).copyWith(color: AppColors.critical, fontSize: 12)),
           ],
           const SizedBox(height: 12),
           Text(widget.l.chooseCity, style: AppText.caption(context)),
@@ -360,7 +360,7 @@ class _LocationStepState extends ConsumerState<_LocationStep> {
           Expanded(
             child: ListView.separated(
               itemCount: _locations.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, i) {
                 final (id, lat, lng, name) = _locations[i];
                 final sel = id == widget.selectedId;
@@ -370,7 +370,7 @@ class _LocationStepState extends ConsumerState<_LocationStep> {
                   child: Row(children: [
                     Icon(Icons.location_on_outlined, size: 16, color: sel ? AppColors.primary : AppColors.textMuted(context)),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(name, style: AppText.bodyMedium(context)?.copyWith(fontSize: 14))),
+                    Expanded(child: Text(name, style: AppText.bodyMedium(context).copyWith(fontSize: 14))),
                     if (sel) const Icon(Icons.check_rounded, color: AppColors.primary, size: 18),
                   ]),
                 );
@@ -444,7 +444,7 @@ class _TypeCard extends StatelessWidget {
             ),
           ]),
           const SizedBox(height: 10),
-          Text(subtitle, style: AppText.body(context)?.copyWith(fontSize: 13, height: 1.5)),
+          Text(subtitle, style: AppText.body(context).copyWith(fontSize: 13, height: 1.5)),
           if (selected) ...[
             const SizedBox(height: 12),
             Container(
@@ -453,7 +453,7 @@ class _TypeCard extends StatelessWidget {
                 color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkBg : AppColors.lightCardAlt,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Text(bullets, style: AppText.caption(context)?.copyWith(height: 1.85, fontSize: 12, color: AppColors.textSecondary(context))),
+              child: Text(bullets, style: AppText.caption(context).copyWith(height: 1.85, fontSize: 12, color: AppColors.textSecondary(context))),
             ),
           ],
         ],
@@ -492,7 +492,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
   Future<void> _sendCode() async {
     if (!_isValidPhone()) {
       final (_, digits, firstDigits, country) = _rulesFor(widget.locId);
-      setState(() => _phoneError = 'Enter a valid $country number (${digits} digits, starting with ${firstDigits.join(' or ')})');
+      setState(() => _phoneError = 'Enter a valid $country number ($digits digits, starting with ${firstDigits.join(' or ')})');
       return;
     }
     setState(() { _loading = true; _phoneError = null; });
@@ -527,7 +527,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
           // Name
           _InputCard(label: 'Your name', child: TextField(
             controller: widget.nameCtrl,
-            style: AppText.bodyMedium(context)?.copyWith(fontSize: 16),
+            style: AppText.bodyMedium(context).copyWith(fontSize: 16),
             decoration: InputDecoration(hintText: 'e.g. Amara', border: InputBorder.none, hintStyle: TextStyle(color: AppColors.textMuted(context)),
               prefixIcon: Icon(Icons.person_outline_rounded, color: AppColors.textMuted(context), size: 20)),
           )),
@@ -548,7 +548,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                 controller: widget.phoneCtrl,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(digitLen)],
-                style: AppText.bodyMedium(context)?.copyWith(fontSize: 16),
+                style: AppText.bodyMedium(context).copyWith(fontSize: 16),
                 decoration: InputDecoration(hintText: 'Phone number', border: InputBorder.none, hintStyle: TextStyle(color: AppColors.textMuted(context))),
                 onChanged: (_) => setState(() { _phoneError = null; }),
               )),
@@ -575,14 +575,14 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                   Row(children: [
                     const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.info),
                     const SizedBox(width: 8),
-                    Expanded(child: Text('Simulation: a code would be sent to $dialCode${widget.phoneCtrl.text.trim()}. For this demo the code is 4872.', style: AppText.caption(context)?.copyWith(color: AppColors.info, fontSize: 12, height: 1.5))),
+                    Expanded(child: Text('Simulation: a code would be sent to $dialCode${widget.phoneCtrl.text.trim()}. For this demo the code is 4872.', style: AppText.caption(context).copyWith(color: AppColors.info, fontSize: 12, height: 1.5))),
                   ]),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _codeCtrl,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(4)],
-                    style: AppText.h2(context)?.copyWith(letterSpacing: 8),
+                    style: AppText.h2(context).copyWith(letterSpacing: 8),
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
                       hintText: '- - - -',
@@ -611,7 +611,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
               child: Row(children: [
                 const Icon(Icons.verified_rounded, color: AppColors.primary, size: 20),
                 const SizedBox(width: 8),
-                Expanded(child: Text('Number verified! You\'re all set.', style: AppText.bodyMedium(context)?.copyWith(color: AppColors.primary))),
+                Expanded(child: Text('Number verified! You\'re all set.', style: AppText.bodyMedium(context).copyWith(color: AppColors.primary))),
               ]),
             ),
           ],
@@ -717,7 +717,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                 controller: widget.phoneCtrl,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(digitLen)],
-                style: AppText.bodyMedium(context)?.copyWith(fontSize: 16),
+                style: AppText.bodyMedium(context).copyWith(fontSize: 16),
                 decoration: InputDecoration(hintText: 'Phone number', border: InputBorder.none, hintStyle: TextStyle(color: AppColors.textMuted(context))),
                 onChanged: (_) => setState(() { _phoneError = null; }),
               )),
@@ -736,13 +736,13 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Demo: code would be sent to $dialCode${widget.phoneCtrl.text}. Use 4872.', style: AppText.caption(context)?.copyWith(color: AppColors.info, fontSize: 12)),
+                  Text('Demo: code would be sent to $dialCode${widget.phoneCtrl.text}. Use 4872.', style: AppText.caption(context).copyWith(color: AppColors.info, fontSize: 12)),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _codeCtrl,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(4)],
-                    style: AppText.h2(context)?.copyWith(letterSpacing: 8),
+                    style: AppText.h2(context).copyWith(letterSpacing: 8),
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
                       hintText: '- - - -',
@@ -767,7 +767,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
               child: Row(children: [
                 const Icon(Icons.verified_rounded, color: AppColors.primary, size: 20),
                 const SizedBox(width: 8),
-                Text('Number verified!', style: AppText.bodyMedium(context)?.copyWith(color: AppColors.primary)),
+                Text('Number verified!', style: AppText.bodyMedium(context).copyWith(color: AppColors.primary)),
               ]),
             ),
             const SizedBox(height: 20),
@@ -790,7 +790,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       Icon(h.$3, size: 15, color: sel ? h.$4 : AppColors.textMuted(context)),
                       const SizedBox(width: 6),
-                      Text(h.$2, style: AppText.bodyMedium(context)?.copyWith(fontSize: 13, color: sel ? h.$4 : AppColors.textPrimary(context))),
+                      Text(h.$2, style: AppText.bodyMedium(context).copyWith(fontSize: 13, color: sel ? h.$4 : AppColors.textPrimary(context))),
                     ]),
                   ),
                 );
@@ -823,14 +823,14 @@ class _InputCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: AppText.caption(context)?.copyWith(fontSize: 11, color: AppColors.textSecondary(context))),
+            Text(label, style: AppText.caption(context).copyWith(fontSize: 11, color: AppColors.textSecondary(context))),
             const SizedBox(height: 6),
             child,
           ],
         ),
       ),
-      if (note != null && error == null) Padding(padding: const EdgeInsets.only(top: 4, left: 4), child: Text(note!, style: AppText.caption(context)?.copyWith(fontSize: 11))),
-      if (error != null) Padding(padding: const EdgeInsets.only(top: 4, left: 4), child: Text(error!, style: AppText.caption(context)?.copyWith(fontSize: 11, color: AppColors.critical))),
+      if (note != null && error == null) Padding(padding: const EdgeInsets.only(top: 4, left: 4), child: Text(note!, style: AppText.caption(context).copyWith(fontSize: 11))),
+      if (error != null) Padding(padding: const EdgeInsets.only(top: 4, left: 4), child: Text(error!, style: AppText.caption(context).copyWith(fontSize: 11, color: AppColors.critical))),
     ],
   );
 }

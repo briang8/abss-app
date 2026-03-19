@@ -1,37 +1,46 @@
 name: abss_app
-description: Alerts by Stay Safe — Climate alert and forecast app for East Africa.
+description: Alerts by Stay Safe is a Climate alert and forecast app for East Africa
 publish_to: none
 version: 1.0.0+1
 
 environment:
-sdk: ^3.10.4
-flutter: ">=3.24.0"
+  sdk: ^3.10.4
+  flutter: ">=3.24.0"
 
 dependencies:
-flutter:
-sdk: flutter
+  flutter:
+    sdk: flutter
 
-# Riverpod 3.x — uses Notifier<T> + NotifierProvider.
-# StateNotifier and StateNotifierProvider DO NOT EXIST in this version.
-# Do NOT downgrade to ^2.x without reverting providers/app_providers.dart.
-flutter_riverpod: ^3.3.1
+  #  State management 
+  flutter_riverpod: ^3.3.1
 
-firebase_core: ^3.15.2
-cloud_firestore: ^5.6.12
-firebase_messaging: ^15.2.7
-geolocator: ^13.0.4
-geocoding: ^3.0.0
+  #  Firebase 
+  firebase_core:      ^3.15.2
+  cloud_firestore:    ^5.6.12
+  firebase_messaging: ^15.2.7
 
-http: ^1.2.2
-connectivity_plus: ^6.0.3
-shared_preferences: ^2.5.4
-google_fonts: ^6.3.2
-cupertino_icons: ^1.0.8
-intl: ^0.20.2
+  #  Location 
+  geolocator: ^13.0.4     # GPS position + permission
+  geocoding:  ^3.0.0      # Reverse-geocode lat/lng to city name
+
+  #  Networking 
+  http:              ^1.2.2   # Open-Meteo REST calls (free weather API)
+  connectivity_plus: ^6.0.3  
+
+  #  Local storage 
+  shared_preferences: ^2.5.4  
+
+  #  UI 
+  google_fonts:    ^6.3.2  
+  cupertino_icons: ^1.0.8
+
+  #  Utilities 
+  intl: ^0.20.2              
 
 dev_dependencies:
-flutter_test:
-sdk: flutter
-flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
 flutter:
-uses-material-design: true
+  uses-material-design: true

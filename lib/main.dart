@@ -1,5 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,11 +13,6 @@ import 'screens/settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const ProviderScope(child: ABSSApp()));
 }
@@ -62,7 +56,7 @@ class _AppRoot extends ConsumerWidget {
   }
 }
 
-//  Main Shell 
+// ─── Main Shell ───────────────────────────────────────────────────────────────
 class MainShell extends ConsumerWidget {
   const MainShell({super.key});
 

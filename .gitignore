@@ -32,6 +32,8 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+.packages
+flutter_*.png
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +45,24 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+android/.gradle/
+android/local.properties
+android/app/google-services.json
+
+# iOS
+ios/Pods/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GoogleService-Info.plist
+
+# VS Code / IntelliJ
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated Firebase config files
+lib/firebase_options.dart

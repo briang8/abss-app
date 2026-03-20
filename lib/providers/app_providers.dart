@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,11 +18,12 @@ final connectivityProvider =
 final isOnlineProvider = Provider<bool>((ref) {
   final asyncResult = ref.watch(connectivityProvider);
   return asyncResult.maybeWhen(
-    data: (result) =>
-        result != ConnectivityResult.none,
+    data: (result) => result != ConnectivityResult.none,
     orElse: () => true,
   );
 });
+
+
 
 class ThemeNotifier extends Notifier<ThemeMode> {
   @override
@@ -42,6 +44,7 @@ final themeProvider =
 );
 
 
+
 class LocaleNotifier extends Notifier<String> {
   @override
   String build() {
@@ -58,6 +61,7 @@ final localeProvider =
     NotifierProvider<LocaleNotifier, String>(
   LocaleNotifier.new,
 );
+
 
 class OnboardingState {
   final bool completed;
@@ -122,6 +126,7 @@ final userProfileProvider =
     NotifierProvider<UserProfileNotifier, UserProfile>(
   UserProfileNotifier.new,
 );
+
 
 
 class LocationModel {
@@ -200,8 +205,29 @@ final forecastProvider =
 final alertsProvider =
     FutureProvider.autoDispose<List<AlertModel>>(
   (ref) async {
-    // For commit 03 this is still demo only.
-    // Later (commit 12) you switch this to Firestore.
+    final loc = ref.watch(locationProvider);
+    final isOnline = ref.watch(isOnlineProvider);
+
+    if (isOnline) {
+      try {
+        final snap = await FirebaseFirestore.instance
+            .collection('alerts')
+            .where('location_id',
+                isEqualTo: loc.locationId)
+            .orderBy('start_time', descending: true)
+            .limit(20)
+            .get();
+
+        if (snap.docs.isNotEmpty) {
+          return snap.docs
+              .map((doc) => AlertModel.fromFirestore(doc))
+              .toList();
+        }
+      } catch (_) {
+        // fall through to demo
+      }
+    }
+
     await Future<void>.delayed(
       const Duration(milliseconds: 400),
     );
@@ -309,6 +335,7 @@ final dailyCheckInProvider =
     NotifierProvider<DailyCheckInNotifier, DailyCheckInState>(
   DailyCheckInNotifier.new,
 );
+
 
 
 class SmsRegistrationState {

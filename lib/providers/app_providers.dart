@@ -8,11 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../services/weather_service.dart';
 
-
-final connectivityProvider =
-    StreamProvider<ConnectivityResult>((ref) {
+final connectivityProvider = StreamProvider<ConnectivityResult>((ref) {
   final connectivity = Connectivity();
-  return connectivity.onConnectivityChanged;
+  return connectivity.onConnectivityChanged.map(
+    (results) => results.isNotEmpty ? results.first : ConnectivityResult.none,
+  );
 });
 
 final isOnlineProvider = Provider<bool>((ref) {
@@ -22,8 +22,6 @@ final isOnlineProvider = Provider<bool>((ref) {
     orElse: () => true,
   );
 });
-
-
 
 class ThemeNotifier extends Notifier<ThemeMode> {
   @override
@@ -38,12 +36,9 @@ class ThemeNotifier extends Notifier<ThemeMode> {
   }
 }
 
-final themeProvider =
-    NotifierProvider<ThemeNotifier, ThemeMode>(
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(
   ThemeNotifier.new,
 );
-
-
 
 class LocaleNotifier extends Notifier<String> {
   @override
@@ -57,11 +52,9 @@ class LocaleNotifier extends Notifier<String> {
   }
 }
 
-final localeProvider =
-    NotifierProvider<LocaleNotifier, String>(
+final localeProvider = NotifierProvider<LocaleNotifier, String>(
   LocaleNotifier.new,
 );
-
 
 class OnboardingState {
   final bool completed;
@@ -69,14 +62,11 @@ class OnboardingState {
   const OnboardingState({required this.completed});
 
   OnboardingState copyWith({bool? completed}) {
-    return OnboardingState(
-      completed: completed ?? this.completed,
-    );
+    return OnboardingState(completed: completed ?? this.completed);
   }
 }
 
-class OnboardingNotifier
-    extends Notifier<OnboardingState> {
+class OnboardingNotifier extends Notifier<OnboardingState> {
   @override
   OnboardingState build() {
     // Later: read from SharedPreferences
@@ -90,12 +80,10 @@ class OnboardingNotifier
 
 final onboardingProvider =
     NotifierProvider<OnboardingNotifier, OnboardingState>(
-  OnboardingNotifier.new,
-);
+      OnboardingNotifier.new,
+    );
 
-
-class UserProfileNotifier
-    extends Notifier<UserProfile> {
+class UserProfileNotifier extends Notifier<UserProfile> {
   @override
   UserProfile build() {
     // Initial empty / guest profile;
@@ -122,12 +110,9 @@ class UserProfileNotifier
   }
 }
 
-final userProfileProvider =
-    NotifierProvider<UserProfileNotifier, UserProfile>(
+final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(
   UserProfileNotifier.new,
 );
-
-
 
 class LocationModel {
   final String locationId;
@@ -157,8 +142,7 @@ class LocationModel {
   }
 }
 
-class LocationNotifier
-    extends Notifier<LocationModel> {
+class LocationNotifier extends Notifier<LocationModel> {
   @override
   LocationModel build() {
     // Default: Kigali
@@ -175,80 +159,68 @@ class LocationNotifier
   }
 }
 
-final locationProvider =
-    NotifierProvider<LocationNotifier, LocationModel>(
+final locationProvider = NotifierProvider<LocationNotifier, LocationModel>(
   LocationNotifier.new,
 );
 
+final forecastProvider = FutureProvider.autoDispose<ForecastModel>((ref) async {
+  final loc = ref.watch(locationProvider);
+  final lat = loc.lat ?? -1.9441;
+  final lng = loc.lng ?? 30.0619;
 
-final forecastProvider =
-    FutureProvider.autoDispose<ForecastModel>(
-  (ref) async {
-    final loc = ref.watch(locationProvider);
-    final lat = loc.lat ?? -1.9441;
-    final lng = loc.lng ?? 30.0619;
-
-    try {
-      return await WeatherService.fetchForecast(
-        lat: lat,
-        lng: lng,
-        locationId: loc.locationId,
-        locationName: loc.locationName,
-      );
-    } catch (_) {
-      return ForecastModel.demo();
-    }
-  },
-);
-
-
-final alertsProvider =
-    FutureProvider.autoDispose<List<AlertModel>>(
-  (ref) async {
-    final loc = ref.watch(locationProvider);
-    final isOnline = ref.watch(isOnlineProvider);
-
-    if (isOnline) {
-      try {
-        final snap = await FirebaseFirestore.instance
-            .collection('alerts')
-            .where('location_id',
-                isEqualTo: loc.locationId)
-            .orderBy('start_time', descending: true)
-            .limit(20)
-            .get();
-
-        if (snap.docs.isNotEmpty) {
-          return snap.docs
-              .map((doc) => AlertModel.fromFirestore(doc))
-              .toList();
-        }
-      } catch (_) {
-        // fall through to demo
-      }
-    }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 400),
+  try {
+    return await WeatherService.fetchForecast(
+      lat: lat,
+      lng: lng,
+      locationId: loc.locationId,
+      locationName: loc.locationName,
     );
-    return AlertModel.demoAlerts();
-  },
-);
+  } catch (_) {
+    return ForecastModel.demo();
+  }
+});
 
-final activeAlertsProvider =
-    Provider<List<AlertModel>>((ref) {
+final alertsProvider = FutureProvider.autoDispose<List<AlertModel>>((
+  ref,
+) async {
+  final loc = ref.watch(locationProvider);
+  final isOnline = ref.watch(isOnlineProvider);
+
+  if (isOnline) {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('alerts')
+          .where('location_id', isEqualTo: loc.locationId)
+          .orderBy('start_time', descending: true)
+          .limit(20)
+          .get();
+
+      if (snap.docs.isNotEmpty) {
+        return snap.docs.map((doc) => AlertModel.fromFirestore(doc)).toList();
+      }
+    } catch (_) {
+      // fall through to demo
+    }
+  }
+
+  await Future<void>.delayed(const Duration(milliseconds: 400));
+  return AlertModel.demoAlerts();
+});
+
+final activeAlertsProvider = Provider<List<AlertModel>>((ref) {
   final alertsAsync = ref.watch(alertsProvider);
 
   return alertsAsync.maybeWhen(
     data: (alerts) => alerts
-        .where((a) =>
-            a.severity == AlertSeverity.critical ||
-            a.severity == AlertSeverity.high)
+        .where(
+          (a) =>
+              a.severity == AlertSeverity.critical ||
+              a.severity == AlertSeverity.high,
+        )
         .toList(),
     orElse: () => <AlertModel>[],
   );
 });
-
 
 class SyncState {
   final DateTime? lastSyncedAt;
@@ -256,9 +228,7 @@ class SyncState {
   const SyncState({required this.lastSyncedAt});
 
   SyncState copyWith({DateTime? lastSyncedAt}) {
-    return SyncState(
-      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-    );
+    return SyncState(lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt);
   }
 }
 
@@ -269,25 +239,28 @@ class SyncNotifier extends Notifier<SyncState> {
   }
 
   void markSynced() {
-    state = state.copyWith(
-      lastSyncedAt: DateTime.now(),
-    );
+    state = state.copyWith(lastSyncedAt: DateTime.now());
   }
 }
 
-final syncProvider =
-    NotifierProvider<SyncNotifier, SyncState>(
+final syncProvider = NotifierProvider<SyncNotifier, SyncState>(
   SyncNotifier.new,
 );
 
+class BottomNavIndexNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
 
-final bottomNavIndexProvider =
-    StateProvider<int>((ref) => 0);
+  void setIndex(int index) {
+    state = index;
+  }
+}
 
+final bottomNavIndexProvider = NotifierProvider<BottomNavIndexNotifier, int>(
+  BottomNavIndexNotifier.new,
+);
 
-
-class UserRegistrationTypeNotifier
-    extends Notifier<String> {
+class UserRegistrationTypeNotifier extends Notifier<String> {
   @override
   String build() {
     // 'online' or 'offline'
@@ -301,9 +274,8 @@ class UserRegistrationTypeNotifier
 
 final userRegistrationTypeProvider =
     NotifierProvider<UserRegistrationTypeNotifier, String>(
-  UserRegistrationTypeNotifier.new,
-);
-
+      UserRegistrationTypeNotifier.new,
+    );
 
 class DailyCheckInState {
   final DateTime? lastCheckIn;
@@ -311,32 +283,25 @@ class DailyCheckInState {
   const DailyCheckInState({required this.lastCheckIn});
 
   DailyCheckInState copyWith({DateTime? lastCheckIn}) {
-    return DailyCheckInState(
-      lastCheckIn: lastCheckIn ?? this.lastCheckIn,
-    );
+    return DailyCheckInState(lastCheckIn: lastCheckIn ?? this.lastCheckIn);
   }
 }
 
-class DailyCheckInNotifier
-    extends Notifier<DailyCheckInState> {
+class DailyCheckInNotifier extends Notifier<DailyCheckInState> {
   @override
   DailyCheckInState build() {
     return const DailyCheckInState(lastCheckIn: null);
   }
 
   void markCheckedIn() {
-    state = state.copyWith(
-      lastCheckIn: DateTime.now(),
-    );
+    state = state.copyWith(lastCheckIn: DateTime.now());
   }
 }
 
 final dailyCheckInProvider =
     NotifierProvider<DailyCheckInNotifier, DailyCheckInState>(
-  DailyCheckInNotifier.new,
-);
-
-
+      DailyCheckInNotifier.new,
+    );
 
 class SmsRegistrationState {
   final bool codeSent;
@@ -362,8 +327,7 @@ class SmsRegistrationState {
   }
 }
 
-class SmsRegistrationNotifier
-    extends Notifier<SmsRegistrationState> {
+class SmsRegistrationNotifier extends Notifier<SmsRegistrationState> {
   @override
   SmsRegistrationState build() {
     return const SmsRegistrationState(
@@ -374,16 +338,11 @@ class SmsRegistrationNotifier
   }
 
   void markCodeSent(String phone) {
-    state = state.copyWith(
-      codeSent: true,
-      lastPhone: phone,
-    );
+    state = state.copyWith(codeSent: true, lastPhone: phone);
   }
 
   void markVerified() {
-    state = state.copyWith(
-      verified: true,
-    );
+    state = state.copyWith(verified: true);
   }
 
   void reset() {
@@ -397,5 +356,5 @@ class SmsRegistrationNotifier
 
 final smsRegistrationProvider =
     NotifierProvider<SmsRegistrationNotifier, SmsRegistrationState>(
-  SmsRegistrationNotifier.new,
-);
+      SmsRegistrationNotifier.new,
+    );

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/app_providers.dart';
 import '../widgets/shared_widgets.dart'; // for ShimmerBox, AlertCard, SeverityBadge, etc. if defined
-import '../theme/app_theme.dart';       // for AppText, AppColors, AppDecorations
+import '../theme/app_theme.dart'; // for AppText, AppColors, AppDecorations
 
 class AlertsScreen extends ConsumerWidget {
   const AlertsScreen({super.key});
@@ -15,13 +15,8 @@ class AlertsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Active Alerts',
-          style: AppText.h3(context),
-        ),
-        actions: const [
-          _RefreshButton(),
-        ],
+        title: Text('Active Alerts', style: AppText.h3(context)),
+        actions: const [_RefreshButton()],
       ),
       body: alertsAsync.when(
         loading: () => const _AlertsLoading(),
@@ -36,7 +31,6 @@ class AlertsScreen extends ConsumerWidget {
     );
   }
 }
-
 
 class _RefreshButton extends ConsumerStatefulWidget {
   const _RefreshButton();
@@ -79,18 +73,16 @@ class _RefreshButtonState extends ConsumerState<_RefreshButton> {
             top: 6,
             right: 6,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: AppColors.info.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 'Refreshed',
-                style: AppText.caption(null).copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppText.caption(
+                  null,
+                ).copyWith(color: Colors.white, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -98,7 +90,6 @@ class _RefreshButtonState extends ConsumerState<_RefreshButton> {
     );
   }
 }
-
 
 class _AlertsLoading extends StatelessWidget {
   const _AlertsLoading();
@@ -109,10 +100,7 @@ class _AlertsLoading extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (_, __) => const ShimmerBox(
-        height: 72,
-        radius: 12,
-      ),
+      itemBuilder: (_, __) => const ShimmerBox(height: 72, radius: 12),
     );
   }
 }
@@ -126,18 +114,14 @@ class _AlertsError extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.wifi_off_rounded,
-            size: 40,
-            color: Colors.grey,
-          ),
+          const Icon(Icons.wifi_off_rounded, size: 40, color: Colors.grey),
           const SizedBox(height: 8),
           Text(
             'Unable to load alerts.\nPull down to retry.',
             textAlign: TextAlign.center,
-            style: AppText.body(context).copyWith(
-              color: AppColors.textMuted(context),
-            ),
+            style: AppText.body(
+              context,
+            ).copyWith(color: AppColors.textMuted(context)),
           ),
         ],
       ),
@@ -154,11 +138,7 @@ class _EmptyAlertsState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            size: 40,
-            color: Colors.green,
-          ),
+          const Icon(Icons.check_circle_rounded, size: 40, color: Colors.green),
           const SizedBox(height: 8),
           Text(
             'No active alerts',
@@ -172,7 +152,6 @@ class _EmptyAlertsState extends StatelessWidget {
     );
   }
 }
-
 
 class _AlertList extends StatelessWidget {
   final List<AlertModel> alerts;
@@ -192,8 +171,7 @@ class _AlertList extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) =>
-                    AlertDetailScreen(alert: alert),
+                builder: (_) => AlertDetailScreen(alert: alert),
               ),
             );
           },
@@ -202,7 +180,6 @@ class _AlertList extends StatelessWidget {
     );
   }
 }
-
 
 class AlertDetailScreen extends StatelessWidget {
   final AlertModel alert;
@@ -227,17 +204,11 @@ class AlertDetailScreen extends StatelessWidget {
     final severityColor = _severityColor(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Alert Details',
-          style: AppText.h3(context),
-        ),
-      ),
+      appBar: AppBar(title: Text('Alert Details', style: AppText.h3(context))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hero card
             Container(
@@ -248,18 +219,17 @@ class AlertDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       HazardIcon(
-                        alert.type,
+                        type: alert.type,
                         size: 28,
                         color: severityColor,
                       ),
                       const SizedBox(width: 8),
-                      SeverityBadge(alert.severity),
+                      SeverityBadge(severity: alert.severity),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -281,16 +251,12 @@ class AlertDetailScreen extends StatelessWidget {
                       ),
                       _Chip(
                         icon: Icons.schedule_rounded,
-                        label:
-                            '${alert.startTime}',
+                        label: '${alert.startTime}',
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    alert.messagePlain,
-                    style: AppText.body(context),
-                  ),
+                  Text(alert.messagePlain, style: AppText.body(context)),
                 ],
               ),
             ),
@@ -299,9 +265,7 @@ class AlertDetailScreen extends StatelessWidget {
             // Safety steps
             Text(
               'Safety steps',
-              style: AppText.h3(context).copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppText.h3(context).copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             // For now, using generic placeholder steps since
@@ -318,8 +282,7 @@ class AlertDetailScreen extends StatelessWidget {
             ),
             _SafetyStep(
               index: 3,
-              text:
-                  'Prepare an emergency kit and keep your phone charged.',
+              text: 'Prepare an emergency kit and keep your phone charged.',
             ),
             const SizedBox(height: 24),
 
@@ -329,17 +292,12 @@ class AlertDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: AppDecorations.card(
                 context,
-                borderColor:
-                    AppColors.border(context),
+                borderColor: AppColors.border(context),
               ),
               child: Row(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.verified_outlined,
-                    color: Colors.green,
-                  ),
+                  const Icon(Icons.verified_outlined, color: Colors.green),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -357,21 +315,16 @@ class AlertDetailScreen extends StatelessWidget {
   }
 }
 
-
 class _Chip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _Chip({
-    required this.icon,
-    required this.label,
-  });
+  const _Chip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.cardAlt(context),
         borderRadius: BorderRadius.circular(999),
@@ -379,40 +332,27 @@ class _Chip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16,
-            color: AppColors.textSecondary(context),
-          ),
+          Icon(icon, size: 16, color: AppColors.textSecondary(context)),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: AppText.caption(context),
-          ),
+          Text(label, style: AppText.caption(context)),
         ],
       ),
     );
   }
 }
 
-
 class _SafetyStep extends StatelessWidget {
   final int index;
   final String text;
 
-  const _SafetyStep({
-    required this.index,
-    required this.text,
-  });
+  const _SafetyStep({required this.index, required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 24,
@@ -424,19 +364,13 @@ class _SafetyStep extends StatelessWidget {
             ),
             child: Text(
               '$index',
-              style: AppText.caption(null).copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppText.caption(
+                null,
+              ).copyWith(color: Colors.white, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: AppText.body(context),
-            ),
-          ),
+          Expanded(child: Text(text, style: AppText.body(context))),
         ],
       ),
     );

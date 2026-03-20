@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../models/models.dart';
 
 // ─── Firestore Service ────────────────────────────────────────────────────────
 class FirestoreService {
@@ -17,11 +18,7 @@ class FirestoreService {
   static Future<String?> initFCM() async {
     final messaging = FirebaseMessaging.instance;
 
-    await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await messaging.requestPermission(alert: true, badge: true, sound: true);
 
     final token = await messaging.getToken();
     await messaging.subscribeToTopic('all_alerts');
@@ -34,13 +31,10 @@ class FirestoreService {
     String uid,
     Map<String, dynamic> data,
   ) async {
-    await _db.collection('users').doc(uid).set(
-      {
-        ...data,
-        'last_active_at': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
-    );
+    await _db.collection('users').doc(uid).set({
+      ...data,
+      'last_active_at': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   static Future<void> updateUserSettings(
@@ -66,15 +60,13 @@ class FirestoreService {
         .collection('devices')
         .doc(token)
         .set({
-      'fcm_token': token,
-      'platform': platform,
-      'last_seen': FieldValue.serverTimestamp(),
-    });
+          'fcm_token': token,
+          'platform': platform,
+          'last_seen': FieldValue.serverTimestamp(),
+        });
   }
 
-  static Future<Map<String, dynamic>?> getUserProfile(
-    String uid,
-  ) async {
+  static Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
       return doc.exists ? doc.data() : null;
@@ -91,9 +83,7 @@ class FirestoreService {
   }
 
   // Locations
-  static Future<DocumentSnapshot?> getLocation(
-    String locationId,
-  ) async {
+  static Future<DocumentSnapshot?> getLocation(String locationId) async {
     try {
       return await _db.collection('locations').doc(locationId).get();
     } catch (_) {
@@ -102,9 +92,7 @@ class FirestoreService {
   }
 
   // Forecasts
-  static Stream<QuerySnapshot> forecastsStream(
-    String locationId,
-  ) {
+  static Stream<QuerySnapshot> forecastsStream(String locationId) {
     return _db
         .collection('forecasts')
         .where('location_id', isEqualTo: locationId)
@@ -114,19 +102,20 @@ class FirestoreService {
   }
 
   static Future<void> saveForecast(ForecastModel forecast) async {
+    final now = DateTime.now();
     await _db.collection('forecasts').add({
-      'location_id': forecast.locationId,
-      'valid_from': Timestamp.fromDate(forecast.generatedAt),
-      'valid_to':
-          Timestamp.fromDate(forecast.generatedAt.add(const Duration(days: 7))),
-      'temperature_min':
-          forecast.daily.isNotEmpty ? forecast.daily.first.tempMin : 0,
-      'temperature_max':
-          forecast.daily.isNotEmpty ? forecast.daily.first.tempMax : 0,
-      'rainfall_mm':
-          forecast.daily.isNotEmpty ? forecast.daily.first.rainfallMm : 0,
-      'wind_speed': forecast.windKph,
-      'humidity': forecast.humidity,
+      'location_id': 'unknown',
+      'valid_from': Timestamp.fromDate(now),
+      'valid_to': Timestamp.fromDate(now.add(const Duration(days: 7))),
+      'temperature_min': forecast.daily.isNotEmpty
+          ? forecast.daily.first.tempMinC
+          : 0,
+      'temperature_max': forecast.daily.isNotEmpty
+          ? forecast.daily.first.tempMaxC
+          : 0,
+      'rainfall_mm': forecast.daily.isNotEmpty
+          ? forecast.daily.first.rainfallMm
+          : 0,
       'forecast_source': 'Open-Meteo',
       'generated_at': FieldValue.serverTimestamp(),
     });
@@ -144,10 +133,7 @@ class FirestoreService {
         .snapshots();
   }
 
-  static Future<void> acknowledgeAlert(
-    String uid,
-    String alertId,
-  ) async {
+  static Future<void> acknowledgeAlert(String uid, String alertId) async {
     await _db
         .collection('users')
         .doc(uid)
@@ -192,8 +178,7 @@ class FirestoreService {
       'location_id': locationId,
       'registration_type': 'offline',
       'is_verified': isVerified,
-      'verified_at':
-          isVerified ? FieldValue.serverTimestamp() : null,
+      'verified_at': isVerified ? FieldValue.serverTimestamp() : null,
       'created_at': FieldValue.serverTimestamp(),
       'is_active': true,
     });
@@ -209,36 +194,29 @@ class FirestoreService {
     required List<String> alertTypesEnabled,
     required bool isVerified,
   }) async {
-    await _db.collection('users').doc(uid).set(
-      {
-        'name': name,
-        'phone': phone,
-        'preferred_language': preferredLanguage,
-        'home_location_id': locationId,
-        'registration_type': registrationType,
-        'is_verified': isVerified,
-        'verified_at':
-            isVerified ? FieldValue.serverTimestamp() : null,
-        'notification_on': true,
-        'alert_types_enabled': alertTypesEnabled,
-        'created_at': FieldValue.serverTimestamp(),
-        'last_active_at': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
-    );
+    await _db.collection('users').doc(uid).set({
+      'name': name,
+      'phone': phone,
+      'preferred_language': preferredLanguage,
+      'home_location_id': locationId,
+      'registration_type': registrationType,
+      'is_verified': isVerified,
+      'verified_at': isVerified ? FieldValue.serverTimestamp() : null,
+      'notification_on': true,
+      'alert_types_enabled': alertTypesEnabled,
+      'created_at': FieldValue.serverTimestamp(),
+      'last_active_at': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   // Sync Metadata
   static Future<void> updateSyncMetadata(String userId) async {
-    await _db.collection('sync_metadata').doc(userId).set(
-      {
-        'user_id': userId,
-        'last_forecast_sync_at': FieldValue.serverTimestamp(),
-        'last_alert_sync_at': FieldValue.serverTimestamp(),
-        'app_version': '1.0.0',
-      },
-      SetOptions(merge: true),
-    );
+    await _db.collection('sync_metadata').doc(userId).set({
+      'user_id': userId,
+      'last_forecast_sync_at': FieldValue.serverTimestamp(),
+      'last_alert_sync_at': FieldValue.serverTimestamp(),
+      'app_version': '1.0.0',
+    }, SetOptions(merge: true));
   }
 }
 
@@ -261,16 +239,15 @@ class PhoneVerificationService {
     }
     // Production wiring (MTN SMS API v3 or Africa's Talking)
     try {
-      return PhoneVerificationResult.codeSent('______'); // replace with real code flow
+      return PhoneVerificationResult.codeSent(
+        '______',
+      ); // replace with real code flow
     } catch (e) {
       return PhoneVerificationResult.failure(e.toString());
     }
   }
 
-  static PhoneVerificationResult verifyCode(
-    String entered,
-    String expected,
-  ) {
+  static PhoneVerificationResult verifyCode(String entered, String expected) {
     if (entered.trim() == expected.trim()) {
       return const PhoneVerificationResult.verified();
     }
@@ -287,8 +264,7 @@ class PhoneVerificationService {
           'Karibu ABSS! Nambari yako imethibitishwa. Utapokea arifa za hatari muhimu kwa eneo lako.',
       'rw':
           'Murakaza neza ABSS! Numero yawe yemejwe. Uzahabwa inzitizi z\'ibyago mu karere kawe.',
-      'am':
-          'ABSS እንኳን ደህና መጡ! ቁጥርዎ ተረጋግጧል። ለአካባቢዎ ወሳኝ ማስጠንቀቂያዎች ይደርሳሉ።',
+      'am': 'ABSS እንኳን ደህና መጡ! ቁጥርዎ ተረጋግጧል። ለአካባቢዎ ወሳኝ ማስጠንቀቂያዎች ይደርሳሉ።',
       'fr':
           'Bienvenue sur ABSS ! Votre numéro est vérifié. Vous recevrez des alertes de danger critique.',
     };
@@ -303,18 +279,18 @@ class PhoneVerificationResult {
   final String? error;
 
   const PhoneVerificationResult.codeSent(this.code)
-      : success = true,
-        codeSentFlag = true,
-        error = null;
+    : success = true,
+      codeSentFlag = true,
+      error = null;
 
   const PhoneVerificationResult.verified()
-      : success = true,
-        codeSentFlag = false,
-        code = null,
-        error = null;
+    : success = true,
+      codeSentFlag = false,
+      code = null,
+      error = null;
 
   const PhoneVerificationResult.failure(this.error)
-      : success = false,
-        codeSentFlag = false,
-        code = null;
+    : success = false,
+      codeSentFlag = false,
+      code = null;
 }

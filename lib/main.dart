@@ -19,23 +19,17 @@ import 'screens/settings_screen.dart';
 
 @pragma('vm:entry-point')
 Future<void> _bgMessageHandler(RemoteMessage msg) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 }
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_bgMessageHandler);
   await FirestoreService.initFCM();
 
-  await SystemChrome.setPreferredOrientations(
-    [DeviceOrientation.portraitUp],
-  );
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   runApp(const ProviderScope(child: ABSSApp()));
 }
@@ -52,12 +46,11 @@ class ABSSApp extends ConsumerWidget {
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness:
-            isDark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor:
-            isDark ? AppColors.darkBg : AppColors.lightBg,
-        systemNavigationBarIconBrightness:
-            isDark ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
       ),
     );
 
@@ -79,11 +72,10 @@ class _AppRoot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingDone = ref.watch(onboardingProvider);
-    if (!onboardingDone) return const OnboardingScreen();
+    if (!onboardingDone.completed) return const OnboardingScreen();
     return const MainShell();
   }
 }
-
 
 class MainShell extends ConsumerWidget {
   const MainShell({super.key});
@@ -93,34 +85,29 @@ class MainShell extends ConsumerWidget {
     final currentIndex = ref.watch(bottomNavIndexProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBg : AppColors.lightBg;
-    final surfaceColor =
-        isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor =
-        isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final textMuted =
-        isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
-    final lastCheckIn =
-        ref.watch(dailyCheckInProvider).lastCheckIn;
+    final surfaceColor = isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final lastCheckIn = ref.watch(dailyCheckInProvider).lastCheckIn;
     final regType = ref.watch(userRegistrationTypeProvider);
-    final needsCheckIn = regType == 'offline' &&
+    final needsCheckIn =
+        regType == 'offline' &&
         (lastCheckIn == null ||
-            DateTime.now()
-                    .difference(lastCheckIn)
-                    .inHours >=
-                24);
+            DateTime.now().difference(lastCheckIn).inHours >= 24);
 
     return Scaffold(
       backgroundColor: bgColor,
       body: Column(
         children: [
           if (needsCheckIn)
-            _CheckInBanner(onCheckIn: () async {
-              ref
-                  .read(dailyCheckInProvider.notifier)
-                  .markCheckedIn();
-              ref.invalidate(forecastProvider);
-              ref.invalidate(alertsProvider);
-            }),
+            _CheckInBanner(
+              onCheckIn: () async {
+                ref.read(dailyCheckInProvider.notifier).markCheckedIn();
+                ref.invalidate(forecastProvider);
+                ref.invalidate(alertsProvider);
+              },
+            ),
           Expanded(
             child: IndexedStack(
               index: currentIndex,
@@ -137,16 +124,13 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: surfaceColor,
-          border:
-              Border(top: BorderSide(color: borderColor)),
+          border: Border(top: BorderSide(color: borderColor)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: isDark ? 0.3 : 0.08,
-              ),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
               blurRadius: 16,
               offset: const Offset(0, -2),
-            )
+            ),
           ],
         ),
         child: SafeArea(
@@ -211,15 +195,14 @@ class _NavItem extends ConsumerWidget {
     final active = index == current;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = AppColors.primary;
-    final mutedColor =
-        isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+    final mutedColor = isDark
+        ? AppColors.darkTextMuted
+        : AppColors.lightTextMuted;
 
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => ref
-            .read(bottomNavIndexProvider.notifier)
-            .state = index,
+        onTap: () => ref.read(bottomNavIndexProvider.notifier).setIndex(index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -237,16 +220,13 @@ class _NavItem extends ConsumerWidget {
               label,
               style: AppText.caption(null).copyWith(
                 fontSize: 10,
-                fontWeight: active
-                    ? FontWeight.w600
-                    : FontWeight.w400,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w400,
                 color: active ? activeColor : mutedColor,
               ),
             ),
             const SizedBox(height: 2),
             AnimatedContainer(
-              duration:
-                  const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 200),
               width: active ? 16 : 0,
               height: 2,
               decoration: BoxDecoration(
@@ -270,17 +250,12 @@ class _CheckInBanner extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.fromLTRB(16, 10, 12, 10),
+      padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
       decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1A2340)
-            : const Color(0xFFFFFBEB),
+        color: isDark ? const Color(0xFF1A2340) : const Color(0xFFFFFBEB),
         border: Border(
           bottom: BorderSide(
-            color: isDark
-                ? AppColors.darkBorder
-                : const Color(0xFFFDE68A),
+            color: isDark ? AppColors.darkBorder : const Color(0xFFFDE68A),
           ),
         ),
       ),
@@ -288,11 +263,7 @@ class _CheckInBanner extends StatelessWidget {
         bottom: false,
         child: Row(
           children: [
-            Icon(
-              Icons.schedule_outlined,
-              size: 16,
-              color: AppColors.moderate,
-            ),
+            Icon(Icons.schedule_outlined, size: 16, color: AppColors.moderate),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -313,12 +284,10 @@ class _CheckInBanner extends StatelessWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.primary
-                        .withValues(alpha: 0.35),
+                    color: AppColors.primary.withValues(alpha: 0.35),
                   ),
                 ),
                 child: Text(

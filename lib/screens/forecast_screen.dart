@@ -43,34 +43,29 @@ class _ForecastScreenState extends ConsumerState<ForecastScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Forecast',
-              style: AppText.h3(context),
-            ),
+            Text('Forecast', style: AppText.h3(context)),
             const SizedBox(height: 2),
             Text(
               loc.locationName,
-              style: AppText.caption(context).copyWith(
-                color: AppColors.textSecondary(context),
-              ),
+              style: AppText.caption(
+                context,
+              ).copyWith(color: AppColors.textSecondary(context)),
             ),
           ],
         ),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 12),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.green.shade600,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
               'Open-Meteo',
-              style: AppText.caption(null).copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppText.caption(
+                null,
+              ).copyWith(color: Colors.white, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -111,7 +106,6 @@ class _ForecastScreenState extends ConsumerState<ForecastScreen>
   }
 }
 
-
 class _ForecastLoading extends StatelessWidget {
   const _ForecastLoading();
 
@@ -143,18 +137,14 @@ class _ForecastError extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.wifi_off_rounded,
-                size: 40,
-                color: Colors.grey,
-              ),
+              const Icon(Icons.wifi_off_rounded, size: 40, color: Colors.grey),
               const SizedBox(height: 8),
               Text(
                 'Unable to load forecast.\nPull down to retry.',
                 textAlign: TextAlign.center,
-                style: AppText.body(context).copyWith(
-                  color: AppColors.textMuted(context),
-                ),
+                style: AppText.body(
+                  context,
+                ).copyWith(color: AppColors.textMuted(context)),
               ),
             ],
           ),
@@ -163,7 +153,6 @@ class _ForecastError extends StatelessWidget {
     );
   }
 }
-
 
 class _CacheNotice extends StatelessWidget {
   final bool isFromCache;
@@ -176,16 +165,11 @@ class _CacheNotice extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: Colors.amber.withValues(alpha: 0.18),
       child: Row(
         children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: Colors.amber,
-          ),
+          const Icon(Icons.info_outline_rounded, size: 18, color: Colors.amber),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -199,7 +183,6 @@ class _CacheNotice extends StatelessWidget {
   }
 }
 
-
 class _HourlyView extends StatelessWidget {
   final List<HourlyForecast> hourly;
 
@@ -208,9 +191,7 @@ class _HourlyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (hourly.isEmpty) {
-      return const Center(
-        child: Text('No hourly data'),
-      );
+      return const Center(child: Text('No hourly data'));
     }
 
     return ListView.separated(
@@ -219,8 +200,7 @@ class _HourlyView extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final h = hourly[index];
-        final timeLabel =
-            index == 0 ? 'Now' : _formatTime(h.time);
+        final timeLabel = index == 0 ? 'Now' : _formatTime(h.time);
 
         return Container(
           padding: const EdgeInsets.all(12),
@@ -229,14 +209,11 @@ class _HourlyView extends StatelessWidget {
             children: [
               SizedBox(
                 width: 60,
-                child: Text(
-                  timeLabel,
-                  style: AppText.body(context),
-                ),
+                child: Text(timeLabel, style: AppText.body(context)),
               ),
               const SizedBox(width: 8),
               WeatherIcon(
-                h.condition,
+                condition: h.condition,
                 size: 28,
                 color: AppColors.textPrimary(context),
               ),
@@ -247,8 +224,7 @@ class _HourlyView extends StatelessWidget {
               ),
               const Spacer(),
               Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     'Rain ${h.rainProbability.toStringAsFixed(0)}%',
@@ -275,7 +251,6 @@ class _HourlyView extends StatelessWidget {
   }
 }
 
-
 class _DailyView extends StatelessWidget {
   final List<DailyForecast> daily;
 
@@ -284,9 +259,7 @@ class _DailyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (daily.isEmpty) {
-      return const Center(
-        child: Text('No daily data'),
-      );
+      return const Center(child: Text('No daily data'));
     }
 
     return ListView.separated(
@@ -299,25 +272,22 @@ class _DailyView extends StatelessWidget {
 
         final min = d.tempMinC;
         final max = d.tempMaxC;
-        final range = (max - min).abs() < 0.1
-            ? 1.0
-            : (max - min).abs();
-        final value =
-            ((max - min) / range).clamp(0.0, 1.0);
+        final range = (max - min).abs() < 0.1 ? 1.0 : (max - min).abs();
+        final value = ((max - min) / range).clamp(0.0, 1.0);
 
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: AppDecorations.card(context),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Text(
                     label,
-                    style: AppText.body(context)
-                        .copyWith(fontWeight: FontWeight.w600),
+                    style: AppText.body(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w600),
                   ),
                   const Spacer(),
                   Text(
@@ -329,10 +299,8 @@ class _DailyView extends StatelessWidget {
               const SizedBox(height: 6),
               LinearProgressIndicator(
                 value: value,
-                backgroundColor:
-                    AppColors.cardAlt(context),
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(
+                backgroundColor: AppColors.cardAlt(context),
+                valueColor: AlwaysStoppedAnimation<Color>(
                   Colors.green.shade600,
                 ),
               ),

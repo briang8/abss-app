@@ -10,7 +10,6 @@ import '../providers/app_providers.dart';
 import '../utils/app_localizations.dart';
 import 'onboarding_screen.dart';
 
-
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
   @override
@@ -264,10 +263,6 @@ class _InputCard extends StatelessWidget {
     this.note,
     this.error,
   });
-  
-  get _showRegisterLink => null;
-  
-
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +289,7 @@ class _InputCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(note!, style: AppText.caption(context).copyWith(fontSize: 11)),
         ],
-        if (error != null && !_showRegisterLink!) ...[
+        if (error != null) ...[
           const SizedBox(height: 4),
           Text(
             error!,

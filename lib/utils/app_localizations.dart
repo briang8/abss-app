@@ -1,4 +1,4 @@
-// lib/utils/app_localizations.dart
+﻿// lib/utils/app_localizations.dart
 // Simple key-value localization. No farming/agri keys remain.
 // Add new keys to _en first, then mirror in _sw, _rw, _am, _fr.
 
@@ -10,7 +10,7 @@ class L10n {
 
   String t(String key) => _s[key] ?? _en[key] ?? key;
 
-  // ── Getters ───────────────────────────────────────────────────────────────
+  
   String get getStarted       => t('get_started');
   String get cont             => t('continue');
   String get skip             => t('skip');
@@ -55,7 +55,7 @@ class L10n {
   String get verifyRequired   => t('verify_required');
   String get smsAlertNote     => t('sms_alert_note');
 
-  // ── ENGLISH ───────────────────────────────────────────────────────────────
+  
   static const _en = <String, String>{
     'get_started':        'Get Started',
     'continue':           'Continue',
@@ -102,7 +102,7 @@ class L10n {
     'sms_alert_note':     'You will receive SMS alerts for critical hazards',
   };
 
-  // ── KISWAHILI ─────────────────────────────────────────────────────────────
+  
   static const _sw = <String, String>{
     'get_started':        'Anza',
     'continue':           'Endelea',
@@ -149,7 +149,7 @@ class L10n {
     'sms_alert_note':     'Utapokea arifa za SMS kwa hatari muhimu',
   };
 
-  // ── KINYARWANDA ───────────────────────────────────────────────────────────
+  
   static const _rw = <String, String>{
     'get_started':        'Tangira',
     'continue':           'Komeza',
@@ -196,7 +196,7 @@ class L10n {
     'sms_alert_note':     'Uzahabwa ubutumwa bwa SMS ku byago bikomeye',
   };
 
-  // ── AMHARIC ───────────────────────────────────────────────────────────────
+  
   static const _am = <String, String>{
     'get_started':        'ጀምር',
     'continue':           'ቀጥል',
@@ -243,7 +243,7 @@ class L10n {
     'sms_alert_note':     'ለወሳኝ አደጋዎች የSMS ማስጠንቀቂያ ይደርስዎታል',
   };
 
-  // ── FRANÇAIS ──────────────────────────────────────────────────────────────
+  
   static const _fr = <String, String>{
     'get_started':        'Commencer',
     'continue':           'Continuer',

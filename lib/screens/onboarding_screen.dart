@@ -1,4 +1,4 @@
-// lib/screens/onboarding_screen.dart
+﻿// lib/screens/onboarding_screen.dart
 import 'package:abss_app/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +12,7 @@ import '../providers/app_providers.dart';
 import '../widgets/shared_widgets.dart';
 import '../utils/app_localizations.dart';
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+
 const _languageEntries = [
   ('English', 'en'),
   ('Kiswahili', 'sw'),
@@ -30,7 +30,7 @@ const _locations = [
   ('bujumbura_bi', -3.3814, 29.3613, 'Bujumbura, Burundi'),
 ];
 
-// ── Phone number rules per country ───────────────────────────────────────────
+
 // (dialCode, totalDigitsAfterDial, validFirstDigits, countryName)
 const _phoneRules = <String, (String, int, List<String>, String)>{
   'kigali_rw': ('+250', 9, ['7'], 'Rwanda'),
@@ -49,7 +49,7 @@ enum _RegType { online, offline }
 
 enum _VerifStep { idle, codeSent, verified }
 
-// ─── Root ─────────────────────────────────────────────────────────────────────
+
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -116,7 +116,24 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
   void _next() => _transition(() => _step++);
   void _back() => _transition(() => _step--);
 
+  bool _validatePhoneForCountry() {
+    final (_, digitLen, firstDigits, _) = _rulesFor(_locId);
+    final phone = _phoneCtrl.text.trim();
+    if (phone.length != digitLen) return false;
+    return firstDigits.any((d) => phone.startsWith(d));
+  }
+
   Future<void> _finish() async {
+    if (!_validatePhoneForCountry()) {
+      final (_, digitLen, firstDigits, country) = _rulesFor(_locId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invalid $country number: $digitLen digits required, must start with ${firstDigits.join(" or ")}'),
+          backgroundColor: AppColors.critical,
+        ),
+      );
+      return;
+    }
     final (dial, _, __, ___) = _rulesFor(_locId);
     final fullPhone = '$dial${_phoneCtrl.text.trim()}';
     ref.read(localeProvider.notifier).setLocale(_langCode);
@@ -133,8 +150,9 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
     ref
         .read(userRegistrationTypeProvider.notifier)
         .setType(_regType == _RegType.offline ? 'offline' : 'online');
+    final uid = fullPhone.replaceAll(RegExp(r'[^0-9]'), '');
     final profile = UserProfile(
-      id: 'local_${DateTime.now().millisecondsSinceEpoch}',
+      id: uid,
       name: _nameCtrl.text.trim().isEmpty ? 'ABSS User' : _nameCtrl.text.trim(),
       phone: fullPhone,
       preferredLanguage: _langCode,
@@ -149,7 +167,6 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
     ref.read(onboardingProvider.notifier).complete();
     try {
       await FirestoreService.registerUser(
-        uid: profile.id,
         name: profile.name,
         phone: profile.phone,
         preferredLanguage: profile.preferredLanguage,
@@ -284,7 +301,7 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
   }
 }
 
-// ─── Step 0: Welcome ──────────────────────────────────────────────────────────
+
 class _WelcomeStep extends StatelessWidget {
   final L10n l;
   final VoidCallback onStart;
@@ -391,7 +408,7 @@ class _FeatureRow extends StatelessWidget {
   );
 }
 
-// ─── Step 1: Language ─────────────────────────────────────────────────────────
+
 class _LanguageStep extends StatelessWidget {
   final L10n l;
   final String selected;
@@ -465,7 +482,7 @@ class _LanguageStep extends StatelessWidget {
   );
 }
 
-// ─── Step 2: Location (with real location permission) ─────────────────────────
+
 class _LocationStep extends ConsumerStatefulWidget {
   final L10n l;
   final String selectedId;
@@ -665,7 +682,7 @@ class _LocationStepState extends ConsumerState<_LocationStep> {
   }
 }
 
-// ─── Step 3: User type ────────────────────────────────────────────────────────
+
 class _UserTypeStep extends StatelessWidget {
   final L10n l;
   final _RegType? selected;
@@ -826,7 +843,7 @@ class _TypeCard extends StatelessWidget {
   );
 }
 
-// ─── Step 4a: Online setup with phone verification simulation ─────────────────
+
 class _OnlineSetupStep extends StatefulWidget {
   final L10n l;
   final String langCode;
@@ -853,6 +870,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
   String _simCode = '';
   final _codeCtrl = TextEditingController();
   String? _phoneError;
+  bool _bannerVisible = false;
 
   @override
   void dispose() {
@@ -885,6 +903,10 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
     setState(() {
       _loading = false;
       _verifStep = _VerifStep.codeSent;
+      _bannerVisible = true;
+    });
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) setState(() => _bannerVisible = false);
     });
   }
 
@@ -995,6 +1017,43 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
           ],
 
           if (_verifStep == _VerifStep.codeSent) ...[
+            if (_bannerVisible) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.info.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: AppColors.info,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Simulation: a code would be sent to $dialCode${widget.phoneCtrl.text.trim()}. For this demo the code is 4872.',
+                        style: AppText.caption(context).copyWith(
+                          color: AppColors.info,
+                          fontSize: 12,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _bannerVisible = false),
+                      child: const Icon(Icons.close, size: 16, color: AppColors.info),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -1007,27 +1066,6 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline_rounded,
-                        size: 16,
-                        color: AppColors.info,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Simulation: a code would be sent to $dialCode${widget.phoneCtrl.text.trim()}. For this demo the code is 4872.',
-                          style: AppText.caption(context).copyWith(
-                            color: AppColors.info,
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
                   TextField(
                     controller: _codeCtrl,
                     keyboardType: TextInputType.number,
@@ -1123,7 +1161,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
   }
 }
 
-// ─── Step 4b: Offline / SMS setup ────────────────────────────────────────────
+
 class _OfflineSetupStep extends StatefulWidget {
   final L10n l;
   final String langCode;
@@ -1151,6 +1189,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
   _VerifStep _verifStep = _VerifStep.idle;
   final _codeCtrl = TextEditingController();
   String? _phoneError;
+  bool _bannerVisible = false;
 
   static const _hazards = [
     ('flood', 'Floods', Icons.water_outlined, AppColors.info),
@@ -1183,6 +1222,10 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
     setState(() {
       _loading = false;
       _verifStep = _VerifStep.codeSent;
+      _bannerVisible = true;
+    });
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) setState(() => _bannerVisible = false);
     });
   }
 
@@ -1286,6 +1329,43 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
             ),
 
           if (_verifStep == _VerifStep.codeSent) ...[
+            if (_bannerVisible) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.info.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: AppColors.info,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Demo: code would be sent to $dialCode${widget.phoneCtrl.text}. Use 4872.',
+                        style: AppText.caption(context).copyWith(
+                          color: AppColors.info,
+                          fontSize: 12,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _bannerVisible = false),
+                      child: const Icon(Icons.close, size: 16, color: AppColors.info),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -1298,13 +1378,6 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Demo: code would be sent to $dialCode${widget.phoneCtrl.text}. Use 4872.',
-                    style: AppText.caption(
-                      context,
-                    ).copyWith(color: AppColors.info, fontSize: 12),
-                  ),
-                  const SizedBox(height: 10),
                   TextField(
                     controller: _codeCtrl,
                     keyboardType: TextInputType.number,
@@ -1443,7 +1516,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
   }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 class _InputCard extends StatelessWidget {
   final String label;
   final String? note;

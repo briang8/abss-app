@@ -1,4 +1,4 @@
-// lib/theme/app_theme.dart
+﻿// lib/theme/app_theme.dart
 //
 // ══════════════════════════════════════════════════════════════════════════════
 // ABSS DESIGN SYSTEM
@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 //
 // COLOUR USAGE RULES
-// ──────────────────
+
 // • Always use the context-aware getters (AppColors.background(ctx)) in widgets.
 //   They return the correct light or dark value automatically.
 // • Use the named palette constants (AppColors.primary, AppColors.critical, etc.)
@@ -15,7 +15,7 @@
 //   building a ThemeData (in AppTheme.light / AppTheme.dark).
 //
 // TEXT STYLE USAGE RULES
-// ──────────────────────
+
 // • All AppText methods take a BuildContext so they can resolve the correct
 //   text colour for the active theme.
 // • Pass null only in places where you have no context (e.g. ThemeData styles).
@@ -27,13 +27,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AppColors
-// ─────────────────────────────────────────────────────────────────────────────
 class AppColors {
   AppColors._();
 
-  // ── Brand / severity — identical in both themes ───────────────────────────
+  
   static const primary      = Color(0xFF16A34A);
   static const primaryDim   = Color(0xFF14532D);
   static const primaryGlow  = Color(0x3316A34A);
@@ -59,7 +56,7 @@ class AppColors {
   static const voice        = Color(0xFF7C3AED);
   static const voiceGlow    = Color(0x337C3AED);
 
-  // ── Light palette ─────────────────────────────────────────────────────────
+  
   static const lightBg            = Color(0xFFF8FAFC);
   static const lightSurface       = Color(0xFFFFFFFF);
   static const lightCard          = Color(0xFFFFFFFF);
@@ -71,7 +68,7 @@ class AppColors {
   static const lightTextMuted     = Color(0xFF94A3B8);
   static const lightTextDisabled  = Color(0xFFCBD5E1);
 
-  // ── Dark palette ──────────────────────────────────────────────────────────
+  
   static const darkBg             = Color(0xFF080C18);
   static const darkSurface        = Color(0xFF0F1628);
   static const darkCard           = Color(0xFF151D35);
@@ -83,7 +80,7 @@ class AppColors {
   static const darkTextMuted      = Color(0xFF475569);
   static const darkTextDisabled   = Color(0xFF334155);
 
-  // ── Context-aware getters — USE THESE IN ALL WIDGET CODE ─────────────────
+  
   static Color background   (BuildContext ctx) => _isDark(ctx) ? darkBg             : lightBg;
   static Color surface      (BuildContext ctx) => _isDark(ctx) ? darkSurface        : lightSurface;
   static Color card         (BuildContext ctx) => _isDark(ctx) ? darkCard           : lightCard;
@@ -98,9 +95,9 @@ class AppColors {
   static bool _isDark(BuildContext ctx) => Theme.of(ctx).brightness == Brightness.dark;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // SeverityStyle & AppSeverity
-// ─────────────────────────────────────────────────────────────────────────────
+
 class SeverityStyle {
   final Color color;
   final Color dimColor;
@@ -143,13 +140,13 @@ class AppSeverity {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // AppText
 //
 // All methods accept BuildContext? (nullable).
 // Pass a real context in widget code so colours resolve to the active theme.
 // Pass null only in ThemeData definitions where no context is available.
-// ─────────────────────────────────────────────────────────────────────────────
+
 class AppText {
   AppText._();
 
@@ -216,9 +213,9 @@ class AppText {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // AppTheme  —  light (default) and dark ThemeData
-// ─────────────────────────────────────────────────────────────────────────────
+
 class AppTheme {
   AppTheme._();
 
@@ -323,9 +320,9 @@ class AppTheme {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // AppDecorations — context-aware BoxDecoration helpers
-// ─────────────────────────────────────────────────────────────────────────────
+
 class AppDecorations {
   AppDecorations._();
 

@@ -1,4 +1,3 @@
-// lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -28,7 +27,6 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Avatar + name ──
             Center(
               child: Column(
                 children: [
@@ -110,7 +108,6 @@ class ProfileScreen extends ConsumerWidget {
 
             const SizedBox(height: 28),
 
-            // ── Info rows ──
             Text('Account details', style: AppText.h3(context)),
             const SizedBox(height: 12),
             Container(
@@ -126,9 +123,7 @@ class ProfileScreen extends ConsumerWidget {
                   _InfoRow(
                     icon: Icons.location_on_outlined,
                     label: 'Location',
-                    value: profile.homeLocationId.isEmpty
-                        ? 'Not set'
-                        : profile.homeLocationId,
+                    value: _locationLabel(profile.homeLocationId),
                   ),
                   _Divider(),
                   _InfoRow(
@@ -161,7 +156,6 @@ class ProfileScreen extends ConsumerWidget {
 
             const SizedBox(height: 24),
 
-            // ── Alert preferences ──
             Text('Alert preferences', style: AppText.h3(context)),
             const SizedBox(height: 12),
             Container(
@@ -224,6 +218,17 @@ class ProfileScreen extends ConsumerWidget {
     'am' => 'Amharic',
     'fr' => 'Français',
     _ => 'English',
+  };
+
+  String _locationLabel(String id) => switch (id) {
+    'kigali_rw' => 'Kigali, Rwanda',
+    'nairobi_ke' => 'Nairobi, Kenya',
+    'addis_et' => 'Addis Ababa, Ethiopia',
+    'kampala_ug' => 'Kampala, Uganda',
+    'dar_tz' => 'Dar es Salaam, Tanzania',
+    'bujumbura_bi' => 'Bujumbura, Burundi',
+    'auto' => 'Current Location',
+    _ => id.isEmpty ? 'Not set' : id,
   };
 }
 

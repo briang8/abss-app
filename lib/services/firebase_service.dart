@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../models/models.dart';
 
-// ─── Firestore Service ────────────────────────────────────────────────────────
 class FirestoreService {
   static final _db = FirebaseFirestore.instance;
 
@@ -185,7 +184,6 @@ class FirestoreService {
   }
 
   static Future<void> registerUser({
-    required String uid,
     required String name,
     required String phone,
     required String preferredLanguage,
@@ -194,7 +192,14 @@ class FirestoreService {
     required List<String> alertTypesEnabled,
     required bool isVerified,
   }) async {
-    await _db.collection('users').doc(uid).set({
+    final uid = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final docRef = _db.collection('users').doc(uid);
+    final existing = await docRef.get();
+    if (existing.exists) {
+      await docRef.update({'last_active_at': FieldValue.serverTimestamp()});
+      return;
+    }
+    await docRef.set({
       'name': name,
       'phone': phone,
       'preferred_language': preferredLanguage,

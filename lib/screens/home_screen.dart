@@ -1,5 +1,4 @@
-// lib/screens/home_screen.dart
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
@@ -80,7 +79,7 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
+//  Header 
 class _Header extends StatelessWidget {
   final String location;
   final UserProfile profile;
@@ -151,7 +150,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─── Weather Hero ─────────────────────────────────────────────────────────────
+//  Weather Hero 
 class _WeatherHero extends StatelessWidget {
   final ForecastModel forecast;
   const _WeatherHero({required this.forecast});
@@ -323,7 +322,6 @@ class _OfflineWeatherHero extends StatelessWidget {
   );
 }
 
-// ─── Active Alert Banner ──────────────────────────────────────────────────────
 class _ActiveAlertBanner extends ConsumerWidget {
   final AlertModel alert;
   const _ActiveAlertBanner({required this.alert});
@@ -394,7 +392,7 @@ class _ActiveAlertBanner extends ConsumerWidget {
   }
 }
 
-// ─── Hourly Strip ─────────────────────────────────────────────────────────────
+
 class _HourlyStrip extends ConsumerWidget {
   final List<HourlyForecast> hourly;
   const _HourlyStrip({required this.hourly});
@@ -503,7 +501,7 @@ class _HourlyStripSkeleton extends StatelessWidget {
   );
 }
 
-// ─── Quick Actions ────────────────────────────────────────────────────────────
+
 class _QuickActions extends ConsumerWidget {
   const _QuickActions();
 

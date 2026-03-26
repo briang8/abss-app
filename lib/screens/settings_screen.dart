@@ -26,7 +26,6 @@ class SettingsScreen extends ConsumerWidget {
               Text('Settings', style: AppText.h2(context)),
               const SizedBox(height: 20),
 
-              // ── Profile card ──────────────────────────────────────────────────
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ProfileScreen()),
@@ -126,7 +125,6 @@ class SettingsScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // ── Appearance ────────────────────────────────────────────────────
               Text('Appearance', style: AppText.h3(context)),
               const SizedBox(height: 12),
               Container(
@@ -175,7 +173,6 @@ class SettingsScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // ── Sync info ─────────────────────────────────────────────────────
               Text('Data', style: AppText.h3(context)),
               const SizedBox(height: 12),
               Container(
@@ -209,7 +206,6 @@ class SettingsScreen extends ConsumerWidget {
 
               const SizedBox(height: 24),
 
-              // ── How to use ABSS ───────────────────────────────────────────────
               Text('How to use ABSS', style: AppText.h3(context)),
               const SizedBox(height: 12),
               _HelpCard(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 
-// ─── AbssCard ─────────────────────────────────────────────────────────────────
 class AbssCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -30,7 +29,6 @@ class AbssCard extends StatelessWidget {
   }
 }
 
-// ─── SeverityBadge ────────────────────────────────────────────────────────────
 class SeverityBadge extends StatelessWidget {
   final AlertSeverity severity;
   const SeverityBadge({super.key, required this.severity});
@@ -52,7 +50,6 @@ class SeverityBadge extends StatelessWidget {
   }
 }
 
-// ─── HazardIcon ───────────────────────────────────────────────────────────────
 class HazardIcon extends StatelessWidget {
   final AlertType type;
   final double size;
@@ -81,7 +78,6 @@ class HazardIcon extends StatelessWidget {
   }
 }
 
-// ─── WeatherIcon ──────────────────────────────────────────────────────────────
 class WeatherIcon extends StatelessWidget {
   final String condition;
   final double size;
@@ -106,7 +102,6 @@ class WeatherIcon extends StatelessWidget {
   }
 }
 
-// ─── AbssButton ───────────────────────────────────────────────────────────────
 class AbssButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
@@ -193,7 +188,6 @@ class AbssButton extends StatelessWidget {
   }
 }
 
-// ─── OfflineSyncBanner ────────────────────────────────────────────────────────
 class OfflineSyncBanner extends StatelessWidget {
   final DateTime? lastSync;
   final VoidCallback? onSync;
@@ -246,7 +240,6 @@ class OfflineSyncBanner extends StatelessWidget {
   }
 }
 
-// ─── SectionHeader ────────────────────────────────────────────────────────────
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? actionLabel;
@@ -274,7 +267,6 @@ class SectionHeader extends StatelessWidget {
   );
 }
 
-// ─── AlertCard ────────────────────────────────────────────────────────────────
 class AlertCard extends StatelessWidget {
   final AlertModel alert;
   final VoidCallback? onTap;
@@ -382,7 +374,7 @@ class AlertCard extends StatelessWidget {
   }
 }
 
-// ─── ShimmerBox ───────────────────────────────────────────────────────────────
+
 class ShimmerBox extends StatefulWidget {
   final double? width;
   final double height;

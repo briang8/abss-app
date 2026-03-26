@@ -1,4 +1,5 @@
-﻿import 'package:abss_app/services/firebase_service.dart';
+﻿import 'package:abss_app/screens/login_screen.dart';
+import 'package:abss_app/services/firebase_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -352,7 +353,7 @@ class _WelcomeStep extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Real-time climate alerts and forecasts for East Africa — online or offline.',
+            'Real-time climate alerts and forecasts for East Africa, online or offline.',
             style: AppText.body(context).copyWith(fontSize: 15),
             textAlign: TextAlign.center,
           ),
@@ -379,6 +380,21 @@ class _WelcomeStep extends StatelessWidget {
             label: l.getStarted,
             onTap: onStart,
             icon: Icons.arrow_forward_rounded,
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+            child: Text(
+              'Already have an account? Log in',
+              style: AppText.body(context).copyWith(
+                color: AppColors.primary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ),
         ],
       ),
@@ -1256,7 +1272,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
     ('earthquake', 'Earthquakes', Icons.vibration_outlined, AppColors.critical),
     ('heatwave', 'Extreme Heat', Icons.thermostat_outlined, AppColors.high),
   ];
-  
+
   get _verificationId => null;
 
   bool _isValidPhone() {

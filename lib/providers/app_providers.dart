@@ -76,6 +76,10 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   void complete() {
     state = state.copyWith(completed: true);
   }
+
+  void reset() {
+    state = const OnboardingState(completed: false);
+  }
 }
 
 final onboardingProvider =
@@ -107,6 +111,20 @@ class UserProfileNotifier extends Notifier<UserProfile> {
 
   void updateProfile(UserProfile profile) {
     state = profile;
+  }
+
+  void clear() {
+    state = const UserProfile(
+      id: '',
+      name: '',
+      phone: '',
+      preferredLanguage: 'en',
+      homeLocationId: 'kigali_rw',
+      registrationType: 'online',
+      alertTypesEnabled: <String>[],
+      isVerified: false,
+      verifiedAt: null,
+    );
   }
 }
 

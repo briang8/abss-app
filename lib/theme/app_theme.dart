@@ -73,6 +73,8 @@ class AppColors {
 
   static bool _isDark(BuildContext ctx) =>
       Theme.of(ctx).brightness == Brightness.dark;
+
+  static Color? text(BuildContext context) {}
 }
 
 // SeverityStyle & AppSeverity

@@ -1,21 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum AlertType { flood, storm, drought, earthquake, heatwave }
 
-enum AlertType {
-  flood,
-  storm,
-  drought,
-  earthquake,
-  heatwave,
-}
-
-enum AlertSeverity {
-  critical,
-  high,
-  moderate,
-  low,
-}
-
+enum AlertSeverity { critical, high, moderate, low }
 
 class AlertModel {
   final String id;
@@ -107,10 +94,7 @@ class AlertModel {
   /// Demo alerts used as a fallback when Firestore is empty/offline.
   /// The actual AlertModel(...) blocks should stay commented out by default.
   static List<AlertModel> demoAlerts() {
-    return [
-    
-
-    ];
+    return [];
   }
 }
 
@@ -161,7 +145,6 @@ class ForecastModel {
     required this.isFromCache,
   });
 
-
   static ForecastModel demo() {
     final now = DateTime.now();
 
@@ -187,23 +170,18 @@ class ForecastModel {
       );
     });
 
-    return ForecastModel(
-      hourly: hourly,
-      daily: daily,
-      isFromCache: true,
-    );
+    return ForecastModel(hourly: hourly, daily: daily, isFromCache: true);
   }
 }
-
 
 class UserProfile {
   final String id;
   final String name;
   final String phone;
-  final String preferredLanguage; 
-  final String homeLocationId; 
-  final String registrationType; 
-  final List<String> alertTypesEnabled; 
+  final String preferredLanguage;
+  final String homeLocationId;
+  final String registrationType;
+  final List<String> alertTypesEnabled;
   final bool isVerified;
   final DateTime? verifiedAt;
 
@@ -243,6 +221,24 @@ class UserProfile {
     );
   }
 
+  factory UserProfile.fromFirestore(Map<String, dynamic> data, String id) {
+    return UserProfile(
+      id: id,
+      name: data['name'] as String? ?? 'ABSS User',
+      phone: data['phone'] as String? ?? '',
+      preferredLanguage: data['preferred_language'] as String? ?? 'en',
+      homeLocationId: data['home_location_id'] as String? ?? 'kigali_rw',
+      registrationType: data['registration_type'] as String? ?? 'online',
+      alertTypesEnabled:
+          (data['alert_types_enabled'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          ['flood', 'storm'],
+      isVerified: data['is_verified'] as bool? ?? false,
+      verifiedAt: (data['verified_at'] as Timestamp?)?.toDate(),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -265,7 +261,8 @@ class UserProfile {
       preferredLanguage: json['preferred_language'] as String? ?? 'en',
       homeLocationId: json['home_location_id'] as String? ?? 'kigali_rw',
       registrationType: json['registration_type'] as String? ?? 'online',
-      alertTypesEnabled: (json['alert_types_enabled'] as List<dynamic>?)
+      alertTypesEnabled:
+          (json['alert_types_enabled'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           const <String>[],

@@ -78,6 +78,20 @@ class FirestoreService {
     }
   }
 
+  static Future<UserProfile?> getUserByPhone(String phone) async {
+    final uid = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    try {
+      final doc = await _db.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserProfile.fromFirestore(doc.data()!, doc.id);
+      }
+      return null;
+    } catch (e) {
+      print('[ABSS] Error getting user by phone: $e');
+      return null;
+    }
+  }
+
   static Future<void> markUserVerified(String uid) async {
     await _db.collection('users').doc(uid).update({
       'is_verified': true,

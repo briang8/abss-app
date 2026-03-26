@@ -1,4 +1,5 @@
 // lib/screens/settings_screen.dart
+import 'package:abss_app/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -234,6 +235,36 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Offline & syncing',
                 body:
                     'Open the app at least once a day while connected so forecasts and alerts stay fresh. A banner appears at the top when a sync is overdue. Tap "Refresh" to update immediately.',
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: const Text('Log Out'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.critical,
+                    backgroundColor: AppColors.critical.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () {
+                    // Reset all relevant providers
+                    ref.read(onboardingProvider.notifier).reset();
+                    ref.read(userProfileProvider.notifier).clear();
+                    ref.read(bottomNavIndexProvider.notifier).setIndex(0);
+
+                    // Navigate back to the very first screen
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const OnboardingScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                ),
               ),
             ],
           ),

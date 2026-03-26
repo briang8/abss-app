@@ -160,9 +160,6 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
       isVerified: true,
       verifiedAt: DateTime.now(),
     );
-    ref.read(userProfileProvider.notifier).setProfile(profile);
-    ref.read(dailyCheckInProvider.notifier).markCheckedIn();
-    ref.read(onboardingProvider.notifier).complete();
     try {
       await FirestoreService.registerUser(
         name: profile.name,
@@ -173,8 +170,27 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
         alertTypesEnabled: profile.alertTypesEnabled,
         isVerified: profile.isVerified,
       );
-    } catch (_) {
-      // Non-fatal — profile already saved locally via SharedPreferences
+      ref.read(userProfileProvider.notifier).setProfile(profile);
+      ref.read(dailyCheckInProvider.notifier).markCheckedIn();
+      ref.read(onboardingProvider.notifier).complete();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration saved to cloud successfully.'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cloud save failed: $e'),
+            backgroundColor: AppColors.critical,
+          ),
+        );
+      }
+      rethrow;
     }
   }
 

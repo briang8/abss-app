@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../models/models.dart';
 
 class FirestoreService {
@@ -194,9 +195,13 @@ class FirestoreService {
   }) async {
     final uid = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final docRef = _db.collection('users').doc(uid);
+    final projectId = Firebase.app().options.projectId;
+    // Debug log to confirm the exact Firebase project and document path in use.
+    print('[ABSS] registerUser -> project: $projectId, path: users/$uid');
     final existing = await docRef.get();
     if (existing.exists) {
       await docRef.update({'last_active_at': FieldValue.serverTimestamp()});
+      print('[ABSS] registerUser -> existing user updated: users/$uid');
       return;
     }
     await docRef.set({
@@ -212,6 +217,7 @@ class FirestoreService {
       'created_at': FieldValue.serverTimestamp(),
       'last_active_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+    print('[ABSS] registerUser -> new user created: users/$uid');
   }
 
   // Sync Metadata

@@ -1,4 +1,3 @@
-// lib/widgets/shared_widgets.dart
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
@@ -373,7 +372,6 @@ class AlertCard extends StatelessWidget {
     return '${d.inHours}h ago';
   }
 }
-
 
 class ShimmerBox extends StatefulWidget {
   final double? width;

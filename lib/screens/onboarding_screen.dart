@@ -1,5 +1,4 @@
-﻿// lib/screens/onboarding_screen.dart
-import 'package:abss_app/services/firebase_service.dart';
+﻿import 'package:abss_app/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +10,6 @@ import '../theme/app_theme.dart';
 import '../providers/app_providers.dart';
 import '../widgets/shared_widgets.dart';
 import '../utils/app_localizations.dart';
-
 
 const _languageEntries = [
   ('English', 'en'),
@@ -30,7 +28,6 @@ const _locations = [
   ('bujumbura_bi', -3.3814, 29.3613, 'Bujumbura, Burundi'),
 ];
 
-
 // (dialCode, totalDigitsAfterDial, validFirstDigits, countryName)
 const _phoneRules = <String, (String, int, List<String>, String)>{
   'kigali_rw': ('+250', 9, ['7'], 'Rwanda'),
@@ -48,7 +45,6 @@ const _phoneRules = <String, (String, int, List<String>, String)>{
 enum _RegType { online, offline }
 
 enum _VerifStep { idle, codeSent, verified }
-
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -128,7 +124,9 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
       final (_, digitLen, firstDigits, country) = _rulesFor(_locId);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invalid $country number: $digitLen digits required, must start with ${firstDigits.join(" or ")}'),
+          content: Text(
+            'Invalid $country number: $digitLen digits required, must start with ${firstDigits.join(" or ")}',
+          ),
           backgroundColor: AppColors.critical,
         ),
       );
@@ -301,7 +299,6 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
   }
 }
 
-
 class _WelcomeStep extends StatelessWidget {
   final L10n l;
   final VoidCallback onStart;
@@ -408,7 +405,6 @@ class _FeatureRow extends StatelessWidget {
   );
 }
 
-
 class _LanguageStep extends StatelessWidget {
   final L10n l;
   final String selected;
@@ -481,7 +477,6 @@ class _LanguageStep extends StatelessWidget {
     ),
   );
 }
-
 
 class _LocationStep extends ConsumerStatefulWidget {
   final L10n l;
@@ -682,7 +677,6 @@ class _LocationStepState extends ConsumerState<_LocationStep> {
   }
 }
 
-
 class _UserTypeStep extends StatelessWidget {
   final L10n l;
   final _RegType? selected;
@@ -842,7 +836,6 @@ class _TypeCard extends StatelessWidget {
     ),
   );
 }
-
 
 class _OnlineSetupStep extends StatefulWidget {
   final L10n l;
@@ -1047,7 +1040,11 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                     ),
                     GestureDetector(
                       onTap: () => setState(() => _bannerVisible = false),
-                      child: const Icon(Icons.close, size: 16, color: AppColors.info),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: AppColors.info,
+                      ),
                     ),
                   ],
                 ),
@@ -1160,7 +1157,6 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
     );
   }
 }
-
 
 class _OfflineSetupStep extends StatefulWidget {
   final L10n l;
@@ -1359,7 +1355,11 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                     ),
                     GestureDetector(
                       onTap: () => setState(() => _bannerVisible = false),
-                      child: const Icon(Icons.close, size: 16, color: AppColors.info),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: AppColors.info,
+                      ),
                     ),
                   ],
                 ),
@@ -1515,7 +1515,6 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
     );
   }
 }
-
 
 class _InputCard extends StatelessWidget {
   final String label;

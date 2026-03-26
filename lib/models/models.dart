@@ -94,7 +94,53 @@ class AlertModel {
   /// Demo alerts used as a fallback when Firestore is empty/offline.
   /// The actual AlertModel(...) blocks should stay commented out by default.
   static List<AlertModel> demoAlerts() {
-    return [];
+    return [
+      /*AlertModel(
+        id: 'demo-flood-1',
+        title: 'Heavy Rainfall Warning',
+        type: AlertType.flood,
+        severity: AlertSeverity.high,
+        locationId: 'kigali_rw',
+        locationName: 'Kigali, Rwanda',
+        startTime: DateTime.now().subtract(const Duration(hours: 2)),
+        endTime: DateTime.now().add(const Duration(hours: 4)),
+        messagePlain:
+            'Expect heavy rainfall and potential flooding in low-lying areas of Kigali, particularly near Nyabugogo. Avoid travel if possible and move to higher ground. The rain is expected to continue for the next 4-6 hours.',
+        source: 'Meteo Rwanda (DEMO)',
+        isOfflineCritical: true,
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),*/
+      /*AlertModel(
+        id: 'demo-storm-1',
+        title: 'Severe Thunderstorm Watch',
+        type: AlertType.storm,
+        severity: AlertSeverity.critical,
+        locationId: 'musanze_rw',
+        locationName: 'Musanze, Rwanda',
+        startTime: DateTime.now(),
+        endTime: DateTime.now().add(const Duration(hours: 3)),
+        messagePlain:
+            'A severe thunderstorm is approaching Musanze district. Expect strong winds, heavy rain, and hail. Seek shelter immediately and stay away from windows. Power outages are possible.',
+        source: 'Meteo Rwanda (DEMO)',
+        isOfflineCritical: true,
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),*/
+      // AlertModel(
+      //   id: 'demo-drought-1',
+      //   title: 'Water Conservation Notice',
+      //   type: AlertType.drought,
+      //   severity: AlertSeverity.moderate,
+      //   locationId: 'kayonza_rw',
+      //   locationName: 'Kayonza, Rwanda',
+      //   startTime: DateTime.now().subtract(const Duration(days: 10)),
+      //   endTime: DateTime.now().add(const Duration(days: 20)),
+      //   messagePlain:
+      //       'Due to prolonged dry conditions in Kayonza district, residents are advised to conserve water. Limit non-essential water use. Restrictions may be imposed if conditions do not improve.',
+      //   source: 'WASAC (DEMO)',
+      //   isOfflineCritical: false,
+      //   createdAt: DateTime.now().subtract(const Duration(days: 10)),
+      // ),
+    ];
   }
 }
 

@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import '../models/models.dart';
 
 class FirestoreService {
   static final _db = FirebaseFirestore.instance;
+  static final _auth = FirebaseAuth.instance;
 
   // Call once at app start — enables Firestore offline caching
   static Future<void> initOfflinePersistence() async {
@@ -182,6 +185,70 @@ class FirestoreService {
       'created_at': FieldValue.serverTimestamp(),
       'is_active': true,
     });
+  }
+
+  // Phone Auth Methods
+  static Future<bool> checkPhoneExists(String phone) async {
+    final uid = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    try {
+      final doc = await _db.collection('users').doc(uid).get();
+      return doc.exists;
+    } catch (e) {
+      print('[ABSS] Error checking phone existence: $e');
+      return false;
+    }
+  }
+
+  static Future<String?> sendOTPViaFirebaseAuth(
+    String phoneWithDialCode,
+  ) async {
+    try {
+      final completer = Completer<String>();
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneWithDialCode,
+        verificationCompleted: (PhoneAuthCredential credential) {},
+        verificationFailed: (FirebaseAuthException e) {
+          if (!completer.isCompleted) {
+            completer.completeError(
+              FirebaseAuthException(code: e.code, message: e.message),
+            );
+          }
+        },
+        codeSent: (String verId, int? resendToken) {
+          if (!completer.isCompleted) completer.complete(verId);
+        },
+        codeAutoRetrievalTimeout: (String verId) {
+          if (!completer.isCompleted) completer.complete(verId);
+        },
+        timeout: const Duration(seconds: 120),
+      );
+      return await completer.future.timeout(
+        const Duration(seconds: 130),
+        onTimeout: () => throw FirebaseAuthException(
+          code: 'verification-timeout',
+          message: 'Verification session timed out. Please resend code.',
+        ),
+      );
+    } catch (e) {
+      print('[ABSS] Error sending OTP: $e');
+      rethrow;
+    }
+  }
+
+  static Future<UserCredential> verifyOTPViaFirebaseAuth(
+    String verificationId,
+    String otp,
+  ) async {
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: otp,
+      );
+      return await _auth.signInWithCredential(credential);
+    } catch (e) {
+      print('[ABSS] Error verifying OTP: $e');
+      rethrow;
+    }
   }
 
   static Future<void> registerUser({

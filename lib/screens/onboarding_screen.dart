@@ -1,4 +1,5 @@
 ﻿import 'package:abss_app/services/firebase_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -169,23 +170,20 @@ class _OnboardingState extends ConsumerState<OnboardingScreen>
         registrationType: profile.registrationType,
         alertTypesEnabled: profile.alertTypesEnabled,
         isVerified: profile.isVerified,
+      ).timeout(
+        const Duration(seconds: 20),
+        onTimeout: () => throw Exception(
+          'Registration timed out. Check your internet and try again.',
+        ),
       );
       ref.read(userProfileProvider.notifier).setProfile(profile);
       ref.read(dailyCheckInProvider.notifier).markCheckedIn();
       ref.read(onboardingProvider.notifier).complete();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registration saved to cloud successfully.'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cloud save failed: $e'),
+            content: Text('Registration error: $e'),
             backgroundColor: AppColors.critical,
           ),
         );
@@ -741,6 +739,7 @@ class _UserTypeStep extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         AbssButton(label: l.cont, onTap: selected != null ? onNext : null),
+        const SizedBox(height: 16),
       ],
     ),
   );
@@ -876,7 +875,7 @@ class _OnlineSetupStep extends StatefulWidget {
 class _OnlineSetupStepState extends State<_OnlineSetupStep> {
   bool _loading = false;
   _VerifStep _verifStep = _VerifStep.idle;
-  String _simCode = '';
+  String _verifId = '';
   final _codeCtrl = TextEditingController();
   String? _phoneError;
   bool _bannerVisible = false;
@@ -890,8 +889,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
   bool _isValidPhone() {
     final (dial, digits, firstDigits, country) = _rulesFor(widget.locId);
     final t = widget.phoneCtrl.text.trim();
-    if (t.length != digits) return false;
-    return firstDigits.any((d) => t.startsWith(d));
+    return t.length == digits && firstDigits.any((d) => t.startsWith(d));
   }
 
   Future<void> _sendCode() async {
@@ -899,36 +897,78 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
       final (_, digits, firstDigits, country) = _rulesFor(widget.locId);
       setState(
         () => _phoneError =
-            'Enter a valid $country number ($digits digits, starting with ${firstDigits.join(' or ')})',
+            'Valid $country number: $digits digits, starting with ${firstDigits.join(' or ')}',
       );
       return;
     }
+
     setState(() {
       _loading = true;
       _phoneError = null;
     });
-    await Future.delayed(const Duration(milliseconds: 1200));
-    _simCode = '4872'; // simulated code
-    setState(() {
-      _loading = false;
-      _verifStep = _VerifStep.codeSent;
-      _bannerVisible = true;
-    });
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) setState(() => _bannerVisible = false);
-    });
+
+    final (dial, _, __, ___) = _rulesFor(widget.locId);
+    final fullPhone = '$dial${widget.phoneCtrl.text.trim()}';
+
+    try {
+      // Check if phone already exists
+      final phoneExists = await FirestoreService.checkPhoneExists(fullPhone);
+      if (phoneExists) {
+        setState(() {
+          _loading = false;
+          _phoneError =
+              'This phone number is already registered. Please use a different number.';
+        });
+        return;
+      }
+
+      // Send OTP via Firebase Auth
+      final verificationId = await FirestoreService.sendOTPViaFirebaseAuth(
+        fullPhone,
+      );
+      _verifId = verificationId!;
+
+      setState(() {
+        _loading = false;
+        _verifStep = _VerifStep.codeSent;
+        _bannerVisible = true;
+      });
+
+      // Auto-hide banner after 5 seconds
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) setState(() => _bannerVisible = false);
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _phoneError = 'Failed to send code. Please try again.';
+      });
+      print('[ABSS] Error sending OTP: $e');
+    }
   }
 
-  void _verifyCode() {
-    if (_codeCtrl.text.trim() == _simCode) {
-      setState(() => _verifStep = _VerifStep.verified);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect code. Try: 4872'),
-          backgroundColor: AppColors.critical,
-        ),
+  Future<void> _verifyOtp(String otp) async {
+    setState(() => _loading = true);
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verifId,
+        smsCode: otp,
       );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      setState(() => _verifStep = _VerifStep.verified);
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Verification failed: ${e.message}'),
+            backgroundColor: AppColors.critical,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -943,10 +983,10 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
         children: [
           Text('Step 4 of 4', style: AppText.caption(context)),
           const SizedBox(height: 6),
-          Text(widget.l.almostThere, style: AppText.h2(context)),
+          Text(widget.l.registerSms, style: AppText.h2(context)),
           const SizedBox(height: 6),
           Text(
-            'Enter your name and verify your phone number to complete setup.',
+            'Verify your number and choose which alerts to receive via SMS.',
             style: AppText.body(context),
           ),
           const SizedBox(height: 20),
@@ -1046,7 +1086,7 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Simulation: a code would be sent to $dialCode${widget.phoneCtrl.text.trim()}. For this demo the code is 4872.',
+                        'Verification code sent to $dialCode${widget.phoneCtrl.text.trim()}.',
                         style: AppText.caption(context).copyWith(
                           color: AppColors.info,
                           fontSize: 12,
@@ -1084,12 +1124,12 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(4),
+                      LengthLimitingTextInputFormatter(6),
                     ],
                     style: AppText.h2(context).copyWith(letterSpacing: 8),
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
-                      hintText: '- - - -',
+                      hintText: '- - - - - -',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(
@@ -1102,9 +1142,9 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                           color: AppColors.border(context),
                         ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: AppColors.info),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderSide: BorderSide(color: AppColors.info),
                       ),
                       hintStyle: TextStyle(
                         color: AppColors.textMuted(context),
@@ -1117,7 +1157,8 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
                   AbssButton(
                     label: 'Verify code',
                     icon: Icons.check_rounded,
-                    onTap: _codeCtrl.text.length == 4 ? _verifyCode : null,
+                    isLoading: _loading,
+                    onTap: !_loading ? () => _verifyOtp(_codeCtrl.text) : null,
                   ),
                 ],
               ),
@@ -1163,11 +1204,15 @@ class _OnlineSetupStepState extends State<_OnlineSetupStep> {
             onTap: (_verifStep == _VerifStep.verified && !_loading)
                 ? () async {
                     setState(() => _loading = true);
-                    await widget.onDone();
-                    if (mounted) setState(() => _loading = false);
+                    try {
+                      await widget.onDone();
+                    } finally {
+                      if (mounted) setState(() => _loading = false);
+                    }
                   }
                 : null,
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -1199,6 +1244,7 @@ class _OfflineSetupStep extends StatefulWidget {
 class _OfflineSetupStepState extends State<_OfflineSetupStep> {
   bool _loading = false;
   _VerifStep _verifStep = _VerifStep.idle;
+  String _verifId = '';
   final _codeCtrl = TextEditingController();
   String? _phoneError;
   bool _bannerVisible = false;
@@ -1210,6 +1256,8 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
     ('earthquake', 'Earthquakes', Icons.vibration_outlined, AppColors.critical),
     ('heatwave', 'Extreme Heat', Icons.thermostat_outlined, AppColors.high),
   ];
+  
+  get _verificationId => null;
 
   bool _isValidPhone() {
     final (_, digits, firstDigits, _) = _rulesFor(widget.locId);
@@ -1226,38 +1274,102 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
       );
       return;
     }
+
     setState(() {
       _loading = true;
       _phoneError = null;
     });
-    await Future.delayed(const Duration(milliseconds: 1200));
-    setState(() {
-      _loading = false;
-      _verifStep = _VerifStep.codeSent;
-      _bannerVisible = true;
-    });
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) setState(() => _bannerVisible = false);
-    });
+
+    final (dial, _, __, ___) = _rulesFor(widget.locId);
+    final fullPhone = '$dial${widget.phoneCtrl.text.trim()}';
+
+    try {
+      // Check if phone already exists
+      final phoneExists = await FirestoreService.checkPhoneExists(fullPhone);
+      if (phoneExists) {
+        setState(() {
+          _loading = false;
+          _phoneError =
+              'This phone number is already registered. Please use a different number.';
+        });
+        return;
+      }
+
+      // Send OTP via Firebase Auth
+      final verificationId = await FirestoreService.sendOTPViaFirebaseAuth(
+        fullPhone,
+      );
+      _verifId = verificationId!;
+
+      setState(() {
+        _loading = false;
+        _verifStep = _VerifStep.codeSent;
+        _bannerVisible = true;
+      });
+
+      // Auto-hide banner after 5 seconds
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) setState(() => _bannerVisible = false);
+      });
+    } catch (e) {
+      setState(() {
+        _loading = false;
+        _phoneError = 'Failed to send code. Please try again.';
+      });
+      print('[ABSS] Error sending OTP: $e');
+    }
   }
 
-  void _verifyCode() {
-    if (_codeCtrl.text.trim() == '4872') {
-      setState(() => _verifStep = _VerifStep.verified);
-    } else {
+  void _verifyCode() async {
+    final enteredCode = _codeCtrl.text.trim();
+
+    if (enteredCode.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Wrong code. Demo code: 4872'),
+          content: Text('Enter the 6-digit verification code.'),
+          backgroundColor: AppColors.high,
+        ),
+      );
+      return;
+    }
+
+    if (_verificationId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Verification expired. Please resend the code.'),
+          backgroundColor: AppColors.high,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      await FirestoreService.verifyOTPViaFirebaseAuth(
+        _verificationId!,
+        enteredCode,
+      );
+      setState(() => _verifStep = _VerifStep.verified);
+    } catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid code. Please try again.'),
           backgroundColor: AppColors.critical,
         ),
       );
+      print('[ABSS] Error verifying OTP: $e');
     }
   }
 
   Future<void> _submit() async {
     setState(() => _loading = true);
-    await widget.onDone();
-    if (mounted) setState(() => _loading = false);
+    try {
+      await widget.onDone();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -1345,7 +1457,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.info.withValues(alpha: 0.07),
+                  color: AppColors.info.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.info.withValues(alpha: 0.25),
@@ -1361,7 +1473,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Demo: code would be sent to $dialCode${widget.phoneCtrl.text}. Use 4872.',
+                        'Verification code sent to $dialCode${widget.phoneCtrl.text}.',
                         style: AppText.caption(context).copyWith(
                           color: AppColors.info,
                           fontSize: 12,
@@ -1385,7 +1497,7 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.info.withValues(alpha: 0.07),
+                color: AppColors.info.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppColors.info.withValues(alpha: 0.25),
@@ -1399,12 +1511,12 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(4),
+                      LengthLimitingTextInputFormatter(6),
                     ],
                     style: AppText.h2(context).copyWith(letterSpacing: 8),
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
-                      hintText: '- - - -',
+                      hintText: '- - - - - -',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide(
@@ -1432,7 +1544,8 @@ class _OfflineSetupStepState extends State<_OfflineSetupStep> {
                   AbssButton(
                     label: 'Verify code',
                     icon: Icons.check_rounded,
-                    onTap: _codeCtrl.text.length == 4 ? _verifyCode : null,
+                    isLoading: _loading,
+                    onTap: !_loading ? () => _verifyCode : null,
                   ),
                 ],
               ),
